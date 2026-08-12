@@ -17,14 +17,22 @@ if (canvas) init(canvas);
 
 function init(canvas) {
   /* ---------- config ---------- */
-  const BOX      = { x: 21, y: 12, z: 11 };
-  const LINK_D   = 5.0;    // distance at which two points link
-  const MAX_SEG  = 1400;   // preallocated line segments
+  const narrow  = window.innerWidth < 760;
+
+  // The box has to match the viewport's shape, or in portrait most of the
+  // cloud sits outside the frustum and the hero reads as a few stray dots.
+  const BOX      = narrow ? { x: 9, y: 15, z: 9 } : { x: 21, y: 12, z: 11 };
+  const LINK_D   = narrow ? 5.6 : 5.0;   // distance at which two points link
+  const MAX_SEG  = 2000;                 // preallocated line segments
   const BG       = 0x06070A;
 
-  const narrow  = window.innerWidth < 760;
-  const COUNT   = narrow ? 78 : 150;
+  const COUNT   = narrow ? 62 : 190;
+  const PULSES  = narrow ? 14 : 30;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // On phones the canvas is small and the web is sparser, so everything
+  // has to be proportionally bigger and brighter to read at all.
+  const S = narrow ? 1.7 : 1;
 
   const C_CORE = new THREE.Color(0xBFD0FF);   // point cores
   const C_LINK = new THREE.Color(0x5C7CE0);   // web lines
@@ -89,16 +97,41 @@ function init(canvas) {
     return t;
   }
 
+  // live per-point colour, so nodes can brighten near the cursor
+  const litCol = new Float32Array(COUNT * 3);
+  litCol.set(col);
+
   const ptGeo = new THREE.BufferGeometry();
   ptGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  ptGeo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  ptGeo.setAttribute('color', new THREE.BufferAttribute(litCol, 3));
+  const sprite = dotTexture();
   const points = new THREE.Points(ptGeo, new THREE.PointsMaterial({
-    map: dotTexture(), size: .38, sizeAttenuation: true,
+    map: sprite, size: .38 * S, sizeAttenuation: true,
     vertexColors: true, transparent: true, opacity: .85,
     depthWrite: false, blending: THREE.AdditiveBlending
   }));
   points.frustumCulled = false;
   world.add(points);
+
+  /* ---------- pulses travelling along links ---------- */
+  // Each pulse rides one link for a moment, then hops to another. Gives
+  // the web a sense of traffic without implying any particular subject.
+  const pulsePos = new Float32Array(PULSES * 3);
+  const pulseGeo = new THREE.BufferGeometry();
+  pulseGeo.setAttribute('position', new THREE.BufferAttribute(pulsePos, 3));
+  const pulseMat = new THREE.PointsMaterial({
+    map: sprite, color: 0xDCE6FF, size: .3 * S, sizeAttenuation: true,
+    transparent: true, opacity: .95, depthWrite: false,
+    blending: THREE.AdditiveBlending
+  });
+  const pulseObj = new THREE.Points(pulseGeo, pulseMat);
+  pulseObj.frustumCulled = false;
+  world.add(pulseObj);
+
+  const pulses = [];
+  for (let i = 0; i < PULSES; i++) {
+    pulses.push({ a: 0, b: 0, t: Math.random(), v: .3 + Math.random() * .5, live: false });
+  }
 
   /* ---------- links ---------- */
   const segPos = new Float32Array(MAX_SEG * 6);
@@ -107,11 +140,16 @@ function init(canvas) {
   segGeo.setAttribute('position', new THREE.BufferAttribute(segPos, 3));
   segGeo.setAttribute('color', new THREE.BufferAttribute(segCol, 3));
   const links = new THREE.LineSegments(segGeo, new THREE.LineBasicMaterial({
-    vertexColors: true, transparent: true, opacity: .55,
+    vertexColors: true, transparent: true, opacity: narrow ? .8 : .55,
     depthWrite: false, blending: THREE.AdditiveBlending
   }));
   links.frustumCulled = false;
   world.add(links);
+
+  // index pairs of the links built this frame, so pulses have rails to ride
+  const pairA = new Uint16Array(MAX_SEG);
+  const pairB = new Uint16Array(MAX_SEG);
+  let pairCount = 0;
 
   /* ---------- distant dust, for depth ---------- */
   const D_COUNT = narrow ? 260 : 520;
@@ -124,7 +162,7 @@ function init(canvas) {
   const dustGeo = new THREE.BufferGeometry();
   dustGeo.setAttribute('position', new THREE.BufferAttribute(dust, 3));
   scene.add(new THREE.Points(dustGeo, new THREE.PointsMaterial({
-    color: 0x8FA6D8, size: .16, sizeAttenuation: true,
+    map: sprite, color: 0x8FA6D8, size: .16 * S, sizeAttenuation: true,
     transparent: true, opacity: .45, depthWrite: false,
     blending: THREE.AdditiveBlending
   })));
@@ -206,8 +244,37 @@ function init(canvas) {
         pos[ix] += push.x * f;
         pos[iy] += push.y * f;
       }
+
+      // and a soft pool of light around it, so the web responds visibly
+      const glow = d2 < 120 ? (1 - d2 / 120) * 1.5 : 0;
+      const k = 1 + glow;
+      litCol[ix]     = Math.min(1, col[ix]     * k);
+      litCol[iy]     = Math.min(1, col[iy]     * k);
+      litCol[iz]     = Math.min(1, col[iz]     * k);
     }
     ptGeo.attributes.position.needsUpdate = true;
+    ptGeo.attributes.color.needsUpdate = true;
+  }
+
+  function stepPulses(dt) {
+    for (let i = 0; i < PULSES; i++) {
+      const p = pulses[i];
+      // links are rebuilt every frame, so a pulse re-picks a rail when it
+      // finishes or when its previous one no longer exists
+      if (!p.live || p.t >= 1) {
+        if (pairCount === 0) { p.live = false; continue; }
+        const e = (Math.random() * pairCount) | 0;
+        p.a = pairA[e]; p.b = pairB[e];
+        p.t = 0; p.v = .3 + Math.random() * .5; p.live = true;
+      }
+      p.t += p.v * dt;
+      const t = Math.min(1, p.t);
+      const a = p.a * 3, b = p.b * 3;
+      pulsePos[i * 3]     = pos[a]     + (pos[b]     - pos[a])     * t;
+      pulsePos[i * 3 + 1] = pos[a + 1] + (pos[b + 1] - pos[a + 1]) * t;
+      pulsePos[i * 3 + 2] = pos[a + 2] + (pos[b + 2] - pos[a + 2]) * t;
+    }
+    pulseGeo.attributes.position.needsUpdate = true;
   }
 
   function rebuildLinks() {
@@ -232,9 +299,12 @@ function init(canvas) {
         const r = C_LINK.r * o, g = C_LINK.g * o, b = C_LINK.b * o;
         segCol[p] = r; segCol[p + 1] = g; segCol[p + 2] = b;
         segCol[p + 3] = r; segCol[p + 4] = g; segCol[p + 5] = b;
+
+        pairA[s] = i; pairB[s] = j;
         s++;
       }
     }
+    pairCount = s;
     segGeo.setDrawRange(0, s * 2);
     segGeo.attributes.position.needsUpdate = true;
     segGeo.attributes.color.needsUpdate = true;
@@ -243,6 +313,7 @@ function init(canvas) {
   /* ---------- loop ---------- */
   let visible = true;
   let last = performance.now();
+  let scrollEased = 0;
 
   function frame(now) {
     raf = requestAnimationFrame(frame);
@@ -251,15 +322,21 @@ function init(canvas) {
 
     step(dt);
     rebuildLinks();
+    stepPulses(dt);
 
     ptr.x += (ptr.tx - ptr.x) * .04;
     ptr.y += (ptr.ty - ptr.y) * .04;
-    camera.position.x = camBase.x + ptr.x * 2.2;
-    camera.position.y = camBase.y - ptr.y * 1.4;
-    camera.position.z = camBase.z;
-    camera.lookAt(0, 0, 0);
 
-    world.rotation.y = Math.sin(now / 21000) * .12 + ptr.x * .05;
+    // dolly through the field as the hero scrolls away
+    const sp = Math.min(1, window.scrollY / Math.max(1, canvas.clientHeight));
+    scrollEased += (sp - scrollEased) * .08;
+
+    camera.position.x = camBase.x + ptr.x * 2.2;
+    camera.position.y = camBase.y - ptr.y * 1.4 + scrollEased * 4;
+    camera.position.z = camBase.z - scrollEased * 9;
+    camera.lookAt(0, scrollEased * 1.5, 0);
+
+    world.rotation.y = Math.sin(now / 21000) * .12 + ptr.x * .05 + scrollEased * .3;
     world.rotation.x = Math.cos(now / 27000) * .06;
 
     render();

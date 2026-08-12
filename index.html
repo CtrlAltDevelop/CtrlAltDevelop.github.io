@@ -52,6 +52,17 @@
 <body>
 <div class="grain" aria-hidden="true"></div>
 
+<!-- ─────────────────────────────  PRELOADER  ───────────────────────────── -->
+<div class="loader" id="loader" role="status" aria-live="polite" aria-label="Loading">
+  <div class="loader__inner">
+    <span class="loader__mark" aria-hidden="true">MZ</span>
+    <div class="loader__bar"><i id="loader-fill"></i></div>
+    <span class="loader__pct" id="loader-pct">0</span>
+  </div>
+</div>
+
+<div class="scroll-progress" aria-hidden="true"><i id="scroll-fill"></i></div>
+
 <a class="skip-link" href="#about">Skip to content</a>
 
 <!-- ─────────────────────────────  NAV  ───────────────────────────── -->
@@ -70,6 +81,7 @@
 
     <nav class="nav__links" id="nav-links" aria-label="Primary">
       <a href="#about">About</a>
+      <a href="#approach">Approach</a>
       <a href="#work">Work</a>
       <a href="#experience">Experience</a>
       <a href="#stack">Stack</a>
@@ -95,7 +107,10 @@
   <div class="hero__content">
     <p class="eyebrow reveal">
       <span class="pulse" aria-hidden="true"></span>
-      Mashhad, Iran &nbsp;·&nbsp; Open to freelance &amp; contract
+      <span>Mashhad, Iran</span>
+      <span class="eyebrow__sep" aria-hidden="true">·</span>
+      <span class="eyebrow__long">Open to freelance &amp; contract</span>
+      <span class="eyebrow__short">Available</span>
     </p>
 
     <h1 class="hero__name reveal" style="--d:.05s">Mohammad Zarif</h1>
@@ -121,12 +136,17 @@
 
   <div class="facts">
     <ul class="facts__inner">
-      <li><b>9+ years</b><span>Mobile &amp; backend</span></li>
-      <li><b>6 companies</b><span>4 countries</span></li>
-      <li><b>118K LOC</b><span>Flutter codebase owned</span></li>
-      <li><b>5 papers</b><span>Peer-reviewed research</span></li>
+      <li><b><span class="count" data-to="9">0</span>+ years</b><span>Mobile &amp; backend</span></li>
+      <li><b><span class="count" data-to="6">0</span> companies</b><span>4 countries</span></li>
+      <li><b><span class="count" data-to="118">0</span>K LOC</b><span>Flutter codebase owned</span></li>
+      <li><b><span class="count" data-to="5">0</span> papers</b><span>Peer-reviewed research</span></li>
     </ul>
   </div>
+
+  <a class="scroll-cue" href="#about" aria-label="Scroll to content">
+    <span class="scroll-cue__line" aria-hidden="true"></span>
+    <span class="scroll-cue__txt">Scroll</span>
+  </a>
 </section>
 
 <!-- ─────────────────────────────  ABOUT  ───────────────────────────── -->
@@ -155,14 +175,77 @@
       </div>
 
       <ul class="stats reveal" style="--d:.08s">
-        <li class="stat"><b>9+</b><span>years in software</span></li>
-        <li class="stat"><b>6</b><span>companies, 4 countries</span></li>
+        <li class="stat"><b><span class="count" data-to="9">0</span>+</b><span>years in software</span></li>
+        <li class="stat"><b><span class="count" data-to="6">0</span></b><span>companies, 4 countries</span></li>
         <li class="stat up"><b>7d → 2h</b><span>analytics pipeline rebuild</span></li>
-        <li class="stat up"><b>+15%</b><span>trading profit from automation</span></li>
-        <li class="stat"><b>9</b><span>languages shipped in-app</span></li>
-        <li class="stat"><b>5</b><span>peer-reviewed papers</span></li>
+        <li class="stat up"><b>+<span class="count" data-to="15">0</span>%</b><span>profit from trade automation</span></li>
+        <li class="stat"><b><span class="count" data-to="9">0</span></b><span>languages shipped in-app</span></li>
+        <li class="stat"><b><span class="count" data-to="5">0</span></b><span>peer-reviewed papers</span></li>
       </ul>
     </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────  APPROACH  ───────────────────────────── -->
+<section class="section" id="approach">
+  <div class="wrap">
+    <header class="section__head reveal">
+      <span class="section__num">02</span>
+      <h2 class="section__title">How I work</h2>
+      <p class="section__sub">
+        Four habits that show up in every codebase I own — they're why a 118K-LOC app
+        stays workable instead of calcifying.
+      </p>
+    </header>
+
+    <ol class="approach">
+      <li class="ap reveal">
+        <span class="ap__idx" aria-hidden="true">01</span>
+        <h3>Architecture that survives the second year</h3>
+        <p>
+          Clean Architecture with a strict dependency direction, feature modules that
+          can be reasoned about alone, and DI wiring kept out of business logic. The
+          test is simple: can a new person change one feature without reading the
+          other ten?
+        </p>
+        <ul class="ap__tags"><li>Clean Architecture</li><li>BLoC</li><li>get_it</li><li>11 modules</li></ul>
+      </li>
+
+      <li class="ap reveal" style="--d:.06s">
+        <span class="ap__idx" aria-hidden="true">02</span>
+        <h3>Errors as values, not surprises</h3>
+        <p>
+          A typed <code>Result&lt;Ok, Err&gt;</code> boundary instead of exceptions thrown
+          across layers. The compiler forces every failure path to be handled at the
+          point it matters, so production surprises become compile-time arguments.
+        </p>
+        <ul class="ap__tags"><li>Typed boundaries</li><li>Total functions</li><li>No silent catch</li></ul>
+      </li>
+
+      <li class="ap reveal" style="--d:.12s">
+        <span class="ap__idx" aria-hidden="true">03</span>
+        <h3>Generate what shouldn't be written by hand</h3>
+        <p>
+          API clients, models, theme code and localization all come out of a source of
+          truth — Swagger, Figma tokens, translation files. ~190K LOC of client code is
+          generated, which means it can't drift from the contract and nobody wastes a
+          day on a typo'd DTO.
+        </p>
+        <ul class="ap__tags"><li>Swagger codegen</li><li>dart_mappable</li><li>Figma tokens</li><li>1,715 keys</li></ul>
+      </li>
+
+      <li class="ap reveal" style="--d:.18s">
+        <span class="ap__idx" aria-hidden="true">04</span>
+        <h3>A baseline the team can't drift below</h3>
+        <p>
+          Zero-warning static analysis, a custom analyzer plugin for project-specific
+          rules, Conventional Commits, and CI that runs analyze plus the full test suite
+          on every PR with per-branch build artifacts. Standards that are enforced don't
+          need to be argued about.
+        </p>
+        <ul class="ap__tags"><li>Zero warnings</li><li>Custom lints</li><li>GitHub Actions</li><li>132 suites</li></ul>
+      </li>
+    </ol>
   </div>
 </section>
 
@@ -170,7 +253,7 @@
 <section class="section" id="work">
   <div class="wrap">
     <header class="section__head reveal">
-      <span class="section__num">02</span>
+      <span class="section__num">03</span>
       <h2 class="section__title">Selected work</h2>
       <p class="section__sub">Six projects that best describe what I actually do.</p>
     </header>
@@ -314,7 +397,7 @@
 <section class="section" id="experience">
   <div class="wrap">
     <header class="section__head reveal">
-      <span class="section__num">03</span>
+      <span class="section__num">04</span>
       <h2 class="section__title">Experience</h2>
       <p class="section__sub">Iran · UAE · Germany · Turkey — mostly remote.</p>
     </header>
@@ -376,7 +459,7 @@
 <section class="section" id="stack">
   <div class="wrap">
     <header class="section__head reveal">
-      <span class="section__num">04</span>
+      <span class="section__num">05</span>
       <h2 class="section__title">Stack &amp; principles</h2>
     </header>
 
@@ -418,7 +501,7 @@
   <canvas class="research__canvas" id="neural-canvas" aria-hidden="true"></canvas>
   <div class="wrap">
     <header class="section__head reveal">
-      <span class="section__num">05</span>
+      <span class="section__num">06</span>
       <h2 class="section__title">Research &amp; education</h2>
       <p class="section__sub">Before trading systems, it was brain signals — five papers on neural-network and signal-analysis methods for neurological diagnosis.</p>
     </header>
@@ -483,9 +566,10 @@
 
 <!-- ─────────────────────────────  CONTACT  ───────────────────────────── -->
 <section class="section section--contact" id="contact">
+  <canvas class="contact__canvas" id="contact-canvas" aria-hidden="true"></canvas>
   <div class="wrap">
     <div class="contact reveal">
-      <span class="section__num">06</span>
+      <span class="section__num">07</span>
       <h2 class="contact__title">Let's build something<br>that has to stay up.</h2>
       <p class="contact__sub">
         Available for freelance and contract work — cross-platform mobile apps,
@@ -513,6 +597,7 @@
 
 <script type="module" src="assets/js/hero-scene.js"></script>
 <script type="module" src="assets/js/neural-scene.js"></script>
+<script type="module" src="assets/js/contact-scene.js"></script>
 <script src="assets/js/main.js" defer></script>
 </body>
 </html>
