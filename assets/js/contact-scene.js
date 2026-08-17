@@ -1,11 +1,12 @@
 /* ===========================================================
-   Contact section — a particle cloud that morphs between four
-   forms (sphere → torus → cube shell → helix) on a slow cycle.
-   Same visual family as the hero constellation, but resolving
-   into shapes instead of drifting.
+   Contact section — a cloud of code glyphs that morphs between
+   four forms (sphere → torus → cube shell → helix) on a slow
+   cycle. Same alphabet as the hero, but resolving into shapes
+   instead of drifting downward.
    =========================================================== */
 
 import * as THREE from 'three';
+import { GRID, glyphAtlas, GLYPH_PICK, GLYPH_READ } from './glyph.js';
 
 const canvas = document.getElementById('contact-canvas');
 if (canvas) init(canvas);
@@ -13,7 +14,9 @@ if (canvas) init(canvas);
 function init(canvas) {
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const narrow  = window.innerWidth < 760;
-  const COUNT   = narrow ? 1800 : 4200;
+  // Glyphs carry far more ink than dots did, so the cloud is thinned out —
+  // past roughly this many the shapes stop reading as shapes.
+  const COUNT   = narrow ? 700 : 1400;
   const HOLD    = 2.6;   // seconds resting in a shape
   const MORPH   = 2.2;   // seconds spent travelling between shapes
 
@@ -112,29 +115,57 @@ function init(canvas) {
     jitter[i] = rand(i * 5.3);
   }
 
-  function dotTexture() {
-    const s = 64, cv = document.createElement('canvas');
-    cv.width = cv.height = s;
-    const g = cv.getContext('2d');
-    const grd = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
-    grd.addColorStop(0, 'rgba(255,255,255,1)');
-    grd.addColorStop(.25, 'rgba(255,255,255,.75)');
-    grd.addColorStop(1, 'rgba(255,255,255,0)');
-    g.fillStyle = grd;
-    g.fillRect(0, 0, s, s);
-    const t = new THREE.CanvasTexture(cv);
-    t.colorSpace = THREE.SRGBColorSpace;
-    return t;
-  }
+  const seed = new Float32Array(COUNT);
+  for (let i = 0; i < COUNT; i++) seed[i] = rand(i * 9.1) * 100;
 
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
-  const cloud = new THREE.Points(geo, new THREE.PointsMaterial({
-    map: dotTexture(), size: .12, sizeAttenuation: true,
-    vertexColors: true, transparent: true, opacity: .95,
-    depthWrite: false, blending: THREE.AdditiveBlending
-  }));
+  geo.setAttribute('color',    new THREE.BufferAttribute(col, 3));
+  geo.setAttribute('aSeed',    new THREE.BufferAttribute(seed, 1));
+
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+  const cloudMat = new THREE.ShaderMaterial({
+    uniforms: {
+      uAtlas: { value: glyphAtlas() },
+      uTime:  { value: 0 },
+      uGrid:  { value: GRID },
+      uSize:  { value: narrow ? 1.4 : 1.1 },
+      uPix:   { value: dpr },
+    },
+    vertexShader: GLYPH_PICK + /* glsl */`
+      uniform float uTime, uGrid, uSize, uPix;
+      attribute float aSeed;
+      varying vec3 vColor;
+      varying vec2 vCell;
+
+      void main() {
+        vec4 mv = modelViewMatrix * vec4(position, 1.);
+        gl_Position = projectionMatrix * mv;
+        gl_PointSize = uSize * uPix * (300. / -mv.z);
+        vColor = color;
+        vCell = glyphCell(aSeed, 1.4, uTime, uGrid);
+      }
+    `,
+    fragmentShader: GLYPH_READ + /* glsl */`
+      uniform sampler2D uAtlas;
+      uniform float uGrid;
+      varying vec3 vColor;
+      varying vec2 vCell;
+
+      void main() {
+        float a = glyphAlpha(uAtlas, vCell, gl_PointCoord, uGrid);
+        if (a < .02) discard;
+        // the copy sits right on top of this cloud, so keep it faint
+        gl_FragColor = vec4(vColor, a * .5);
+      }
+    `,
+    vertexColors: true,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+
+  const cloud = new THREE.Points(geo, cloudMat);
   cloud.frustumCulled = false;
   group.add(cloud);
 
@@ -187,6 +218,7 @@ function init(canvas) {
     last = now;
 
     updateMorph(dt, now / 1000);
+    cloudMat.uniforms.uTime.value = now / 1000;
     group.rotation.y = now / 14000;
     group.rotation.x = Math.sin(now / 19000) * .22;
 

@@ -30,6 +30,17 @@
   --radius:        14px;
 
   --ease:          cubic-bezier(.22, 1, .36, 1);
+
+  /* liquid glass — the same surface the hero's floating code cards are made
+     of, expressed in CSS: a cool translucent body, a lit top rim, and a
+     gradient that falls away down the card. */
+  --glass-body:    rgba(13, 17, 27, .58);
+  --glass-sheen:   linear-gradient(158deg, rgba(255,255,255,.06), rgba(255,255,255,.014) 44%, rgba(124,154,255,.035));
+  --glass-line:    rgba(255, 255, 255, .095);
+  --glass-line-hi: rgba(174, 196, 255, .34);
+  --glass-rim:     inset 0 1px 0 rgba(255, 255, 255, .075);
+  --glass-rim-hi:  inset 0 1px 0 rgba(196, 214, 255, .16);
+  --glass-blur:    blur(14px) saturate(118%);
 }
 
 /* ---------- reset ---------- */
@@ -87,6 +98,36 @@ a:focus-visible, button:focus-visible {
 
 .section { position: relative; padding-block: clamp(5rem, 11vw, 9rem); }
 .section + .section { border-top: 1px solid var(--line); }
+
+/* A very faint wash per section. Translucent cards need something behind them
+   or the glass has nothing to pick up, and this keeps the page from going flat
+   between the two WebGL sections. */
+.section::before {
+  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(58% 44% at 14% 8%,  rgba(124, 154, 255, .055), transparent 72%),
+    radial-gradient(46% 40% at 88% 78%, rgba(167, 139, 250, .045), transparent 72%);
+}
+.section > * { position: relative; z-index: 1; }
+.section--research::before, .section--contact::before { display: none; }
+
+/* ---------- liquid glass surfaces ----------
+   Layered gradients rather than backdrop-filter: a page this size would be
+   asking the compositor to blur twenty overlapping surfaces at once, which
+   costs real frames and buys nothing — there is no live content behind these
+   cards, only the section wash. Blur is kept for the two places it earns
+   itself: the nav and the hero facts bar, both of which sit over the canvas. */
+.card, .panel, .stat, .paper, .ap {
+  background-color: var(--glass-body);
+  background-image: var(--glass-sheen);
+  border-color: var(--glass-line);
+  box-shadow: var(--glass-rim);
+}
+.card:hover, .panel:hover, .stat:hover, .paper:hover, .ap:hover {
+  background-color: rgba(18, 23, 36, .66);
+  border-color: var(--glass-line-hi);
+  box-shadow: var(--glass-rim-hi), 0 14px 40px -22px rgba(124, 154, 255, .5);
+}
 
 .section__head { margin-bottom: clamp(2.5rem, 5vw, 4rem); max-width: 62ch; }
 .section__num {
@@ -166,7 +207,13 @@ a:focus-visible, button:focus-visible {
   overflow: hidden;
   padding-top: 5rem;
 }
-.hero__canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+/* The scene fades up once its first frame is on screen, so the hero never
+   flashes a half-built field of glyphs. */
+.hero__canvas {
+  position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0;
+  opacity: 0; transition: opacity 1.1s var(--ease);
+}
+.hero__canvas.is-live { opacity: 1; }
 
 /* ambient colour wash sitting on top of the WebGL canvas */
 .hero__glow {
@@ -256,12 +303,25 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
   max-width: var(--wrap); margin-inline: auto; padding: 1.15rem var(--pad);
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem;
 }
-.facts li { display: flex; flex-direction: column; gap: .15rem; }
+/* glass tiles, echoing the panes floating in the scene behind them */
+.facts li {
+  display: flex; flex-direction: column; gap: .15rem;
+  padding: .6rem .85rem;
+  border: 1px solid var(--line); border-radius: 10px;
+  background: linear-gradient(160deg, rgba(255,255,255,.045), rgba(255,255,255,.012));
+  transition: transform .3s var(--ease), border-color .3s, background .3s;
+}
+.facts li:hover {
+  transform: translateY(-2px);
+  border-color: var(--line-hi);
+  background: linear-gradient(160deg, rgba(124,154,255,.1), rgba(255,255,255,.02));
+}
 .facts b {
   font-family: var(--font-display); font-size: clamp(1.05rem, 2vw, 1.35rem);
   font-weight: 700; letter-spacing: -.02em; line-height: 1;
 }
-.facts span {
+/* label only — the counter span lives inside <b> and must inherit its type */
+.facts li > span {
   font-family: var(--font-mono); font-size: .68rem; letter-spacing: .1em;
   text-transform: uppercase; color: var(--txt-faint);
 }
@@ -273,11 +333,11 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
 
 .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
 .stat {
-  background: var(--bg-card); padding: 1.35rem 1.25rem;
+  padding: 1.35rem 1.25rem;
   display: flex; flex-direction: column; gap: .25rem;
   transition: background .3s;
 }
-.stat:hover { background: var(--bg-card-hi); }
+.stat:hover { transform: translateY(-2px); }
 .stat b { font-family: var(--font-display); font-size: clamp(1.5rem, 3.4vw, 2rem); font-weight: 700; letter-spacing: -.03em; line-height: 1; }
 .stat.up b { color: var(--accent); }
 .stat span { font-size: .82rem; color: var(--txt-faint); line-height: 1.4; }
@@ -286,7 +346,7 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
 .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; }
 
 .card {
-  position: relative; background: var(--bg-card);
+  position: relative;
   border: 1px solid var(--line); border-radius: var(--radius);
   padding: clamp(1.4rem, 2.6vw, 2rem);
   display: flex; flex-direction: column;
@@ -298,7 +358,7 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
   background: radial-gradient(60% 60% at 12% 0%, rgba(124, 154, 255, .09), transparent 70%);
   transition: opacity .4s;
 }
-.card:hover { border-color: var(--line-hi); background: var(--bg-card-hi); transform: translateY(-3px); }
+.card:hover { transform: translateY(-3px); }
 .card:hover::before { opacity: 1; }
 .card--feature { grid-column: 1 / -1; }
 
@@ -373,11 +433,11 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
 .stack { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr)); gap: 1.25rem; }
 .panel {
   position: relative; overflow: hidden;   /* contains the tilt glare */
-  background: var(--bg-card); border: 1px solid var(--line);
+  border: 1px solid var(--line);
   border-radius: var(--radius); padding: 1.5rem;
   transition: border-color .35s, background .35s, transform .35s var(--ease);
 }
-.panel:hover { border-color: var(--line-hi); background: var(--bg-card-hi); }
+.panel:hover { transform: translateY(-2px); }
 .panel__title {
   font-family: var(--font-mono); font-size: .72rem; font-weight: 700;
   letter-spacing: .18em; text-transform: uppercase; color: var(--accent);
@@ -426,11 +486,11 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
 
 .paper-list { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
 .paper {
-  background: var(--bg-card); padding: 1.4rem 1.5rem;
+  padding: 1.4rem 1.5rem;
   transition: background .3s, padding-left .35s var(--ease);
   border-left: 2px solid transparent;
 }
-.paper:hover { background: var(--bg-card-hi); border-left-color: var(--violet); }
+.paper:hover { border-left-color: var(--violet); }
 .paper__date { font-family: var(--font-mono); font-size: .72rem; letter-spacing: .1em; color: var(--violet); }
 .paper__title { font-size: 1rem; font-weight: 600; line-height: 1.42; margin: .5rem 0 .45rem; }
 .paper__venue { margin: 0; font-size: .82rem; color: var(--txt-faint); display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
@@ -535,7 +595,7 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
 /* ---------- approach ---------- */
 .approach { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; }
 .ap {
-  position: relative; background: var(--bg-card);
+  position: relative;
   border: 1px solid var(--line); border-radius: var(--radius);
   padding: clamp(1.5rem, 2.8vw, 2.1rem);
   overflow: hidden;
@@ -547,7 +607,7 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
   transform: scaleY(0); transform-origin: top;
   transition: transform .5s var(--ease);
 }
-.ap:hover { border-color: var(--line-hi); background: var(--bg-card-hi); transform: translateY(-3px); }
+.ap:hover { transform: translateY(-3px); }
 .ap:hover::after { transform: scaleY(1); }
 .ap__idx {
   font-family: var(--font-mono); font-size: .72rem; letter-spacing: .2em;
@@ -632,14 +692,16 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
   .facts { margin-top: 2rem; }
   .facts__inner { grid-template-columns: 1fr 1fr; gap: .85rem 1.25rem; padding-block: .95rem; }
   .facts b { font-size: 1rem; }
-  .facts span { font-size: .6rem; letter-spacing: .08em; }
+  .facts li > span { font-size: .6rem; letter-spacing: .08em; }
 
-  /* Lighter than before: the constellation is the only visual on the page
-     at this width, so it has to actually be visible behind the copy. */
+  /* The scene is the only visual at this width, so the scrim is shaped around
+     the copy: light across the top band where the code card floats, dark
+     through the name, tagline and buttons, easing out into the facts bar. */
   .hero__fade {
     background: linear-gradient(to bottom,
-      rgba(6, 7, 10, .72) 0%, rgba(6, 7, 10, .66) 46%,
-      rgba(6, 7, 10, .3) 70%, var(--bg) 99%);
+      rgba(6, 7, 10, .3) 0%, rgba(6, 7, 10, .34) 16%,
+      rgba(6, 7, 10, .72) 30%, rgba(6, 7, 10, .68) 62%,
+      rgba(6, 7, 10, .34) 80%, var(--bg) 99%);
   }
 }
 
