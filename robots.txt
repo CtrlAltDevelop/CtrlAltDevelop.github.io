@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ctrlaltdevelop.github.io/sitemap.xml
