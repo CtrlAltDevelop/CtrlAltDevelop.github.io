@@ -401,6 +401,95 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
 }
 .card__link:hover { gap: .65rem; }
 
+/* ---------- open-source packages ----------
+   Same glass surface as .card, but a denser grid: nine of these on one screen,
+   so the title carries the weight and the prose stays small. */
+.pkg-facts {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 1px; background: var(--line);
+  border: 1px solid var(--line); border-radius: var(--radius);
+  overflow: hidden; margin-bottom: clamp(2rem, 4vw, 3rem);
+}
+.pkg-facts li {
+  display: grid; gap: .35rem; padding: 1.15rem 1.3rem;
+  background-color: var(--glass-body); background-image: var(--glass-sheen);
+}
+.pkg-facts b {
+  font-family: var(--font-display); font-size: clamp(1.3rem, 2.8vw, 1.75rem);
+  font-weight: 700; letter-spacing: -.03em; line-height: 1; color: var(--accent);
+}
+.pkg-facts span { font-size: .8rem; color: var(--txt-faint); line-height: 1.4; }
+
+.pkg-group {
+  font-family: var(--font-mono); font-size: .74rem; font-weight: 500;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--txt-faint);
+  display: flex; align-items: center; gap: 1rem;
+  margin: clamp(2.25rem, 4vw, 3rem) 0 1.25rem;
+}
+.pkg-group:first-of-type { margin-top: 0; }
+.pkg-group::after {
+  content: ''; flex: 1; height: 1px;
+  background: linear-gradient(90deg, var(--line-hi), transparent);
+}
+
+.pkgs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; }
+
+.pkg {
+  position: relative;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  padding: clamp(1.25rem, 2.2vw, 1.7rem);
+  display: flex; flex-direction: column;
+  transition: border-color .35s, background .35s, transform .35s var(--ease);
+  overflow: hidden;
+}
+.pkg::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0;
+  background: radial-gradient(60% 60% at 12% 0%, rgba(124, 154, 255, .09), transparent 70%);
+  transition: opacity .4s;
+}
+.pkg:hover { transform: translateY(-3px); }
+.pkg:hover::before { opacity: 1; }
+.pkg--feature { grid-column: 1 / -1; }
+
+.pkg__top { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: .7rem; }
+.pkg__name {
+  font-family: var(--font-mono); font-size: clamp(.95rem, 1.9vw, 1.12rem);
+  font-weight: 700; letter-spacing: -.01em; color: var(--txt);
+  overflow-wrap: anywhere;
+}
+.pkg__ver {
+  flex: none; font-family: var(--font-mono); font-size: .68rem; font-weight: 500;
+  letter-spacing: .06em; color: var(--accent);
+  padding: .2rem .5rem; border-radius: 5px;
+  border: 1px solid rgba(124, 154, 255, .28); background: rgba(124, 154, 255, .07);
+}
+.pkg__desc { color: var(--txt-dim); font-size: .92rem; line-height: 1.62; }
+
+.pkg__list { display: grid; gap: .5rem; margin: .85rem 0 1.15rem; }
+.pkg__list li {
+  position: relative; padding-left: 1.05rem;
+  font-size: .865rem; color: var(--txt-dim); line-height: 1.6;
+}
+.pkg__list li::before {
+  content: ''; position: absolute; left: 0; top: .6em;
+  width: 4px; height: 4px; border-radius: 1px; background: var(--accent); opacity: .6;
+  transform: rotate(45deg);
+}
+.pkg--feature .pkg__list { grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: .6rem 2rem; }
+
+.pkg__links { display: flex; align-items: center; gap: 1.1rem; margin-top: 1rem; }
+.pkg__link {
+  font-size: .82rem; font-weight: 600; color: var(--accent);
+  display: inline-flex; align-items: center; gap: .35rem;
+  transition: gap .25s var(--ease), color .25s;
+}
+.pkg__link::after {
+  content: '\2197'; font-size: .8em; opacity: .7;
+}
+.pkg__link:hover { gap: .55rem; }
+.pkg__link--quiet { color: var(--txt-faint); }
+.pkg__link--quiet:hover { color: var(--txt-dim); }
+
 /* ---------- timeline ---------- */
 .timeline { position: relative; display: grid; gap: 0; }
 .timeline::before {
@@ -644,6 +733,8 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
 @media (max-width: 900px) {
   .about  { grid-template-columns: 1fr; }
   .cards  { grid-template-columns: 1fr; }
+  .pkgs   { grid-template-columns: 1fr; }
+  .pkg-facts { grid-template-columns: repeat(2, 1fr); }
   .research { grid-template-columns: 1fr; }
   .tl { grid-template-columns: 1fr; gap: .5rem; }
   .research__canvas { width: 100%; height: 330px; opacity: .34; }
@@ -668,6 +759,7 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
   .nav__links > a:not(.btn)::after { display: none; }
   .nav__cta { margin-top: 1.1rem; justify-content: center; }
   .stats { grid-template-columns: 1fr 1fr; }
+  .pkg-group { font-size: .68rem; letter-spacing: .12em; gap: .75rem; }
   .approach { grid-template-columns: 1fr; }
 
   /* Let the hero grow with its content instead of centring inside a fixed

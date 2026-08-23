@@ -45,4 +45,12 @@ Then open <http://localhost:4321>.
 ## Updating the résumé
 
 Replace `assets/Mohammad-Zarif-Resume.pdf` and update the matching content in
-`index.html` (experience timeline, work cards, research list).
+`index.html` (experience timeline, work cards, open-source packages, research list).
+
+## Open-source packages
+
+The `#open-source` section lists the nine Dart/Flutter packages published on pub.dev,
+each mirrored at `github.com/CtrlAltDevelop/<name>`. Version numbers are hardcoded in
+`index.html` — bump them there when a package is republished. Section numbers
+(`.section__num`) are also hardcoded and run 01–08, so inserting a section means
+renumbering everything after it.

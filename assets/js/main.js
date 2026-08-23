@@ -177,7 +177,7 @@
   (function () {
     if (reduced || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
 
-    var cards = document.querySelectorAll('.card, .ap, .panel');
+    var cards = document.querySelectorAll('.card, .ap, .panel, .pkg');
     var MAX = 5;   // degrees
 
     cards.forEach(function (card) {

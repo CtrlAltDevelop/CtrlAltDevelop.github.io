@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mohammad Zarif — Senior Flutter &amp; Python Developer for Hire</title>
 
-<meta name="description" content="Hire Mohammad Zarif — senior Flutter and Python developer, 9+ years developing cross-platform mobile apps and the backends behind them. Freelance and contract.">
+<meta name="description" content="Hire Mohammad Zarif — senior Flutter and Python developer, 9+ years developing cross-platform mobile apps and the backends behind them, and author of nine open-source Dart packages on pub.dev. Freelance and contract.">
 <meta name="author" content="Mohammad Zarif">
 <meta name="theme-color" content="#06070A">
 <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
@@ -14,11 +14,11 @@
 <meta property="og:site_name" content="Mohammad Zarif">
 <meta property="og:locale" content="en_US">
 <meta property="og:title" content="Mohammad Zarif — Senior Flutter &amp; Python Developer for Hire">
-<meta property="og:description" content="9+ years developing cross-platform Flutter apps and the Python and .NET backends that power them. Available for freelance and contract work.">
+<meta property="og:description" content="9+ years developing cross-platform Flutter apps and the Python and .NET backends that power them, plus nine open-source Dart packages on pub.dev. Available for freelance and contract work.">
 <meta property="og:url" content="https://ctrlaltdevelop.github.io/">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Mohammad Zarif — Senior Flutter &amp; Python Developer for Hire">
-<meta name="twitter:description" content="9+ years developing cross-platform Flutter apps and the Python and .NET backends that power them. Available for freelance and contract work.">
+<meta name="twitter:description" content="9+ years developing cross-platform Flutter apps and the Python and .NET backends that power them, plus nine open-source Dart packages on pub.dev. Available for freelance and contract work.">
 
 <link rel="canonical" href="https://ctrlaltdevelop.github.io/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23111726'/%3E%3Ctext x='16' y='22' font-family='Helvetica,Arial,sans-serif' font-size='15' font-weight='bold' fill='%237C9AFF' text-anchor='middle'%3EMZ%3C/text%3E%3C/svg%3E">
@@ -44,7 +44,7 @@
   "@type": "Person",
   "name": "Mohammad Zarif",
   "jobTitle": "Senior Flutter & Python Developer",
-  "description": "Senior Flutter and Python developer with 9+ years developing cross-platform mobile apps and the Python and .NET backends behind them. Available for freelance and contract work.",
+  "description": "Senior Flutter and Python developer with 9+ years developing cross-platform mobile apps and the Python and .NET backends behind them, and author of nine open-source Dart and Flutter packages published on pub.dev. Available for freelance and contract work.",
   "hasOccupation": {
     "@type": "Occupation",
     "name": "Flutter & Python Developer",
@@ -60,7 +60,7 @@
   "sameAs": ["https://github.com/CtrlAltDevelop"],
   "address": { "@type": "PostalAddress", "addressLocality": "Mashhad", "addressCountry": "IR" },
   "alumniOf": { "@type": "CollegeOrUniversity", "name": "Khavaran Institute of Higher Education" },
-  "knowsAbout": ["Flutter", "Dart", "Python", "MQL4/5", "C#", "Clean Architecture", "FinTech", "Algorithmic Trading"]
+  "knowsAbout": ["Flutter", "Dart", "Python", "MQL4/5", "C#", "Clean Architecture", "FinTech", "Algorithmic Trading", "Open Source", "Dart package development"]
 }
 </script>
 </head>
@@ -99,6 +99,7 @@
       <a href="#about">About</a>
       <a href="#approach">Approach</a>
       <a href="#work">Work</a>
+      <a href="#open-source">Open source</a>
       <a href="#experience">Experience</a>
       <a href="#stack">Stack</a>
       <a href="#research">Research</a>
@@ -189,11 +190,17 @@
           learning, which is mostly how a biomedical-engineering researcher ended up owning a
           118K-LOC trading codebase.
         </p>
+        <p>
+          Nine of those building blocks are now published on pub.dev as open-source Dart and
+          Flutter packages — the typed <code>Result</code> boundary, the BLoC layer over it, the
+          codegen CLIs, and the widgets I got tired of rewriting — MIT licensed and public
+          on GitHub.
+        </p>
       </div>
 
       <ul class="stats reveal" style="--d:.08s">
         <li class="stat"><b><span class="count" data-to="9">0</span>+</b><span>years in software</span></li>
-        <li class="stat"><b><span class="count" data-to="6">0</span></b><span>companies, 4 countries</span></li>
+        <li class="stat up"><b><span class="count" data-to="9">0</span></b><span>packages on pub.dev</span></li>
         <li class="stat up"><b>7d → 2h</b><span>analytics pipeline rebuild</span></li>
         <li class="stat up"><b>+<span class="count" data-to="15">0</span>%</b><span>profit from trade automation</span></li>
         <li class="stat"><b><span class="count" data-to="9">0</span></b><span>languages shipped in-app</span></li>
@@ -235,8 +242,10 @@
           A typed <code>Result&lt;Ok, Err&gt;</code> boundary instead of exceptions thrown
           across layers. The compiler forces every failure path to be handled at the
           point it matters, so production surprises become compile-time arguments.
+          I extracted that boundary into <code>verdict</code> and <code>verdict_bloc</code> and
+          published both.
         </p>
-        <ul class="ap__tags"><li>Typed boundaries</li><li>Total functions</li><li>No silent catch</li></ul>
+        <ul class="ap__tags"><li>Typed boundaries</li><li>Total functions</li><li>No silent catch</li><li>verdict</li></ul>
       </li>
 
       <li class="ap reveal" style="--d:.12s">
@@ -246,7 +255,8 @@
           API clients, models, theme code and localization all come out of a source of
           truth — Swagger, Figma tokens, translation files. ~190K LOC of client code is
           generated, which means it can't drift from the contract and nobody wastes a
-          day on a typo'd DTO.
+          day on a typo'd DTO. The two gaps in that pipeline became CLIs of their own —
+          <code>openapi_enum_patch</code> and <code>figma_tokens_gen</code>.
         </p>
         <ul class="ap__tags"><li>Swagger codegen</li><li>dart_mappable</li><li>Figma tokens</li><li>1,715 keys</li></ul>
       </li>
@@ -294,7 +304,7 @@
           <li>Clean Architecture + BLoC with <code>get_it</code> DI — 11 feature modules, 151 use cases and 63 BLoCs across 118K LOC, with a typed <code>Result&lt;Ok, Err&gt;</code> boundary replacing exception-based error flow.</li>
           <li>Dio + Retrofit networking driven by a Swagger codegen pipeline producing ~190K LOC of type-safe clients and <code>dart_mappable</code> models, behind an interceptor chain for auth, transparent 401 refresh, envelope unwrapping and logging.</li>
           <li>Deposits, withdrawals and transfers with address whitelisting; demo &amp; live accounts; IB rebate, network and installment dashboards; ProTrader copy-trading follow flows; AI-assisted chart analysis.</li>
-          <li>1,715 localization keys with zero hardcoded strings, and a Figma-token-driven design system generated into typed Dart theme code.</li>
+          <li>1,715 localization keys with zero hardcoded strings, and a Figma-token-driven design system generated into typed Dart theme code — the generator is now published as <code>figma_tokens_gen</code>.</li>
           <li>Dev/sandbox/production build flavors, GitHub Actions CI running <code>flutter analyze</code> + tests on every PR, per-branch APK/iOS artifacts, a custom Dart analyzer plugin for project lint rules, and 132 unit/BLoC test suites.</li>
         </ul>
         <ul class="tags">
@@ -410,11 +420,235 @@
   </div>
 </section>
 
+<!-- ─────────────────────────────  OPEN SOURCE  ───────────────────────────── -->
+<section class="section" id="open-source">
+  <div class="wrap">
+    <header class="section__head reveal">
+      <span class="section__num">04</span>
+      <h2 class="section__title">Open source</h2>
+      <p class="section__sub">
+        Nine Dart &amp; Flutter packages published on pub.dev — the pieces of the
+        DeltaFX codebase that were general enough to stand on their own. MIT licensed,
+        mirrored on GitHub, every one scoring the full 160/160 pub points.
+      </p>
+    </header>
+
+    <ul class="pkg-facts reveal">
+      <li><b><span class="count" data-to="9">0</span></b><span>packages published</span></li>
+      <li><b>160/160</b><span>pub points, all nine</span></li>
+      <li><b><span class="count" data-to="7">0</span></b><span>Flutter packages, 2 CLIs</span></li>
+      <li><b>MIT</b><span>every repo public</span></li>
+    </ul>
+
+    <h3 class="pkg-group reveal">Architecture &amp; error handling</h3>
+    <div class="pkgs">
+
+      <article class="pkg reveal">
+        <div class="pkg__top">
+          <h4 class="pkg__name">verdict</h4>
+          <span class="pkg__ver">1.0.0</span>
+        </div>
+        <p class="pkg__desc">
+          A sealed <code>Result&lt;T&gt;</code> and a structured <code>Failure</code> hierarchy, so
+          fallible calls return a typed verdict instead of throwing across layer boundaries.
+        </p>
+        <ul class="pkg__list">
+          <li>Five failure variants — API, network, auth, cancelled, unknown — each mapping to a distinct UI response.</li>
+          <li>Composable <code>ChainedFailureMapper</code> per error source, keeping SDK-specific handling isolated.</li>
+          <li><code>guard()</code> / <code>guardSync()</code> wrappers and <code>failureOrigin()</code> call-site diagnostics.</li>
+          <li>No code generation and no Flutter dependency — usable from servers, CLIs and shared domain packages.</li>
+        </ul>
+        <ul class="tags"><li>Dart</li><li>Sealed types</li><li>Error handling</li></ul>
+        <div class="pkg__links">
+          <a class="pkg__link" href="https://pub.dev/packages/verdict" target="_blank" rel="noopener">pub.dev</a>
+          <a class="pkg__link pkg__link--quiet" href="https://github.com/CtrlAltDevelop/verdict" target="_blank" rel="noopener">GitHub</a>
+        </div>
+      </article>
+
+      <article class="pkg reveal" style="--d:.05s">
+        <div class="pkg__top">
+          <h4 class="pkg__name">verdict_bloc</h4>
+          <span class="pkg__ver">1.0.1</span>
+        </div>
+        <p class="pkg__desc">
+          The BLoC layer over <code>verdict</code>: transient states carry the last known good
+          data, so a screen never blanks because a refresh failed.
+        </p>
+        <ul class="pkg__list">
+          <li>Ready state and transient messages rebuild independently — errors and loading overlay the data instead of replacing it.</li>
+          <li><code>GenericListBloc</code> covering pagination, pull-to-refresh, infinite scroll and filtering.</li>
+          <li>Feedback routed through an <code>AppBlocFeedbackDelegate</code>, so the toast or snackbar choice stays in the app layer.</li>
+        </ul>
+        <ul class="tags"><li>Flutter</li><li>BLoC</li><li>Pagination</li></ul>
+        <div class="pkg__links">
+          <a class="pkg__link" href="https://pub.dev/packages/verdict_bloc" target="_blank" rel="noopener">pub.dev</a>
+          <a class="pkg__link pkg__link--quiet" href="https://github.com/CtrlAltDevelop/verdict_bloc" target="_blank" rel="noopener">GitHub</a>
+        </div>
+      </article>
+
+    </div>
+
+    <h3 class="pkg-group reveal">Code generation &amp; tooling</h3>
+    <div class="pkgs">
+
+      <article class="pkg reveal">
+        <div class="pkg__top">
+          <h4 class="pkg__name">openapi_enum_patch</h4>
+          <span class="pkg__ver">1.1.0</span>
+        </div>
+        <p class="pkg__desc">
+          A CLI that gives real names to the integer enums <code>swagger_parser</code> generates
+          from OpenAPI — <code>value2</code> becomes <code>disabled</code> — and writes the enum
+          files the generator skips.
+        </p>
+        <ul class="pkg__list">
+          <li>Four commands: <code>normalize</code> path templates, <code>patch</code> overrides, <code>reorganize</code> models by namespace, <code>audit</code> naming coverage.</li>
+          <li>The audit report is the thing that makes it usable on a large spec — it tells you exactly which enums are still unnamed.</li>
+        </ul>
+        <ul class="tags"><li>Dart CLI</li><li>OpenAPI</li><li>Codegen</li></ul>
+        <div class="pkg__links">
+          <a class="pkg__link" href="https://pub.dev/packages/openapi_enum_patch" target="_blank" rel="noopener">pub.dev</a>
+          <a class="pkg__link pkg__link--quiet" href="https://github.com/CtrlAltDevelop/openapi_enum_patch" target="_blank" rel="noopener">GitHub</a>
+        </div>
+      </article>
+
+      <article class="pkg reveal" style="--d:.05s">
+        <div class="pkg__top">
+          <h4 class="pkg__name">figma_tokens_gen</h4>
+          <span class="pkg__ver">1.0.0</span>
+        </div>
+        <p class="pkg__desc">
+          Turns a Figma design-token JSON export into checked-in Dart <code>Color</code> constants
+          and palette maps — no runtime parsing, no asset lookup, no string keys in widget code.
+        </p>
+        <ul class="pkg__list">
+          <li>Reads DTCG, legacy and bare-value formats, so it works with whichever Figma exporter the design team happens to use.</li>
+          <li>CLI for the build pipeline plus a library API when the output needs shaping.</li>
+        </ul>
+        <ul class="tags"><li>Dart CLI</li><li>Design tokens</li><li>Theming</li></ul>
+        <div class="pkg__links">
+          <a class="pkg__link" href="https://pub.dev/packages/figma_tokens_gen" target="_blank" rel="noopener">pub.dev</a>
+          <a class="pkg__link pkg__link--quiet" href="https://github.com/CtrlAltDevelop/figma_tokens_gen" target="_blank" rel="noopener">GitHub</a>
+        </div>
+      </article>
+
+    </div>
+
+    <h3 class="pkg-group reveal">Widgets &amp; charting</h3>
+    <div class="pkgs">
+
+      <article class="pkg pkg--feature reveal">
+        <div class="pkg__top">
+          <h4 class="pkg__name">ohlcv_chart</h4>
+          <span class="pkg__ver">2.0.0</span>
+        </div>
+        <p class="pkg__desc">
+          A candlestick and market-depth charting engine for Flutter — the trading-terminal
+          surface, written once instead of per app.
+        </p>
+        <ul class="pkg__list">
+          <li>Five chart types — candles, OHLC bars, line, filled area, baseline — plus Heikin-Ashi and Renko transforms.</li>
+          <li>26 configurable indicators across overlays (moving averages, Bollinger Bands, SAR) and sub-charts (MACD, RSI, KDJ, stochastics).</li>
+          <li>17 drawing tools — levels, rays, trend lines, boxes, ellipses, Fibonacci retracements — with undo/redo through a controller.</li>
+          <li>Order-book depth charts, linear/log/percentage price axes, session dividers, and fully serializable layouts.</li>
+        </ul>
+        <ul class="tags"><li>Flutter</li><li>Custom painting</li><li>Market data</li><li>Technical analysis</li></ul>
+        <div class="pkg__links">
+          <a class="pkg__link" href="https://pub.dev/packages/ohlcv_chart" target="_blank" rel="noopener">pub.dev</a>
+          <a class="pkg__link pkg__link--quiet" href="https://github.com/CtrlAltDevelop/ohlcv_chart" target="_blank" rel="noopener">GitHub</a>
+        </div>
+      </article>
+
+      <article class="pkg reveal">
+        <div class="pkg__top">
+          <h4 class="pkg__name">toast_overlay</h4>
+          <span class="pkg__ver">1.1.0</span>
+        </div>
+        <p class="pkg__desc">
+          An animated, themeable toast with an auto-dismiss countdown ring and an optional
+          copyable support reference ID — the piece that turns "it failed" into a ticket.
+        </p>
+        <ul class="pkg__list">
+          <li>Renders into the root <code>Overlay</code> rather than a <code>SnackBar</code>, so it sits above dialogs and survives route changes.</li>
+          <li>Stacking with a configurable limit, four statuses, top or bottom anchoring, injectable strings for localization.</li>
+          <li>Keeps the last 20 toasts as history for debugging.</li>
+        </ul>
+        <ul class="tags"><li>Flutter</li><li>Overlay</li><li>Theming</li></ul>
+        <div class="pkg__links">
+          <a class="pkg__link" href="https://pub.dev/packages/toast_overlay" target="_blank" rel="noopener">pub.dev</a>
+          <a class="pkg__link pkg__link--quiet" href="https://github.com/CtrlAltDevelop/toast_overlay" target="_blank" rel="noopener">GitHub</a>
+        </div>
+      </article>
+
+      <article class="pkg reveal" style="--d:.05s">
+        <div class="pkg__top">
+          <h4 class="pkg__name">queued_toast</h4>
+          <span class="pkg__ver">1.0.0</span>
+        </div>
+        <p class="pkg__desc">
+          The dependency-light sibling: overlay toasts that queue per screen position,
+          de-duplicate identical messages and stack up to five at a time.
+        </p>
+        <ul class="pkg__list">
+          <li>Independent queues for top, centre and bottom, so a burst of errors doesn't bury a success.</li>
+          <li>Five variants, light/dark adaptation from ambient brightness, and no <code>BuildContext</code> needed at the call site.</li>
+        </ul>
+        <ul class="tags"><li>Flutter</li><li>Overlay</li><li>Queueing</li></ul>
+        <div class="pkg__links">
+          <a class="pkg__link" href="https://pub.dev/packages/queued_toast" target="_blank" rel="noopener">pub.dev</a>
+          <a class="pkg__link pkg__link--quiet" href="https://github.com/CtrlAltDevelop/queued_toast" target="_blank" rel="noopener">GitHub</a>
+        </div>
+      </article>
+
+      <article class="pkg reveal" style="--d:.1s">
+        <div class="pkg__top">
+          <h4 class="pkg__name">sliding_segmented_control</h4>
+          <span class="pkg__ver">1.0.0</span>
+        </div>
+        <p class="pkg__desc">
+          A segmented control whose selection is marked by a pill sliding between segments,
+          with an optional body that cross-fades underneath it.
+        </p>
+        <ul class="pkg__list">
+          <li><code>SegmentedBody</code> pairs the control with its content — fade, slide and scale transitions built in, custom ones accepted.</li>
+          <li>Segments expose button semantics and labels, and mirror automatically under RTL.</li>
+        </ul>
+        <ul class="tags"><li>Flutter</li><li>Animation</li><li>Accessibility</li></ul>
+        <div class="pkg__links">
+          <a class="pkg__link" href="https://pub.dev/packages/sliding_segmented_control" target="_blank" rel="noopener">pub.dev</a>
+          <a class="pkg__link pkg__link--quiet" href="https://github.com/CtrlAltDevelop/sliding_segmented_control" target="_blank" rel="noopener">GitHub</a>
+        </div>
+      </article>
+
+      <article class="pkg reveal" style="--d:.15s">
+        <div class="pkg__top">
+          <h4 class="pkg__name">capsule_nav_bar</h4>
+          <span class="pkg__ver">1.1.0</span>
+        </div>
+        <p class="pkg__desc">
+          A bottom navigation bar that floats over content as a rounded capsule, its selection
+          marked by a pill that slides between destinations.
+        </p>
+        <ul class="pkg__list">
+          <li>Outlined and filled icon variants that swap as the indicator moves; optional backdrop-blur glass treatment.</li>
+          <li>Semantic buttons, 48&nbsp;dp minimum tap targets, directional alignment for RTL.</li>
+        </ul>
+        <ul class="tags"><li>Flutter</li><li>Navigation</li><li>Theming</li></ul>
+        <div class="pkg__links">
+          <a class="pkg__link" href="https://pub.dev/packages/capsule_nav_bar" target="_blank" rel="noopener">pub.dev</a>
+          <a class="pkg__link pkg__link--quiet" href="https://github.com/CtrlAltDevelop/capsule_nav_bar" target="_blank" rel="noopener">GitHub</a>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
 <!-- ─────────────────────────────  EXPERIENCE  ───────────────────────────── -->
 <section class="section" id="experience">
   <div class="wrap">
     <header class="section__head reveal">
-      <span class="section__num">04</span>
+      <span class="section__num">05</span>
       <h2 class="section__title">Experience</h2>
       <p class="section__sub">Iran · UAE · Germany · Turkey — mostly remote.</p>
     </header>
@@ -476,7 +710,7 @@
 <section class="section" id="stack">
   <div class="wrap">
     <header class="section__head reveal">
-      <span class="section__num">05</span>
+      <span class="section__num">06</span>
       <h2 class="section__title">Stack &amp; principles</h2>
     </header>
 
@@ -518,7 +752,7 @@
   <canvas class="research__canvas" id="neural-canvas" aria-hidden="true"></canvas>
   <div class="wrap">
     <header class="section__head reveal">
-      <span class="section__num">06</span>
+      <span class="section__num">07</span>
       <h2 class="section__title">Research &amp; education</h2>
       <p class="section__sub">Before trading systems, it was brain signals — five papers on neural-network and signal-analysis methods for neurological diagnosis.</p>
     </header>
@@ -586,7 +820,7 @@
   <canvas class="contact__canvas" id="contact-canvas" aria-hidden="true"></canvas>
   <div class="wrap">
     <div class="contact reveal">
-      <span class="section__num">07</span>
+      <span class="section__num">08</span>
       <h2 class="contact__title">Let's build something<br>that has to stay up.</h2>
       <p class="contact__sub">
         Available to hire for freelance and contract work — cross-platform Flutter apps,
