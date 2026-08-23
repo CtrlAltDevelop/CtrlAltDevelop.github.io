@@ -141,6 +141,9 @@ function boot(target) {
       exhibit.rotation.x = Math.sin(time * 0.22 + i) * 0.035;
       exhibit.userData.floatY = Math.sin(time * 0.34 + i * 1.7) * 0.32;
       exhibit.position.y = exhibit.userData.baseY + exhibit.userData.floatY;
+      exhibit.userData.scanners.forEach((scanner) => {
+        scanner.position.y = Math.sin(time * 1.35 + scanner.userData.phase) * 1.16;
+      });
       exhibit.userData.materials.forEach((material) => {
         material.opacity = material.userData.baseOpacity * (0.32 + near * 0.9);
       });
@@ -180,6 +183,7 @@ function createExhibit(index, side, accent, ice, slate, random) {
   const group = new THREE.Group();
   group.userData.materials = [];
   group.userData.floatY = 0;
+  group.userData.scanners = [];
 
   const frameMaterial = lineMaterial(index === 3 || index === 8 ? accent : ice, 0.34);
   const quietMaterial = lineMaterial(slate, 0.25);
@@ -205,6 +209,7 @@ function createExhibit(index, side, accent, ice, slate, random) {
   signature.scale.setScalar(index === 0 ? 1.16 : 1);
   group.add(signature);
   group.userData.materials.push(...signature.userData.materials);
+  group.userData.scanners.push(...signature.userData.scanners);
 
   const panel = makeDataPanel(side, accentMaterial, quietMaterial);
   panel.position.set(side * -3.7, -2.35, 2.2);
@@ -228,50 +233,373 @@ function createExhibit(index, side, accent, ice, slate, random) {
 
 function makeSignature(index, accentMaterial, iceMaterial) {
   const group = new THREE.Group();
-  const geometries = [
-    new THREE.TorusKnotGeometry(1.35, 0.28, 90, 10, 2, 3),
-    new THREE.IcosahedronGeometry(1.75, 1),
-    new THREE.BoxGeometry(2.7, 2.7, 2.7, 2, 2, 2),
-    new THREE.OctahedronGeometry(1.95, 1),
-    new THREE.TorusKnotGeometry(1.42, 0.34, 96, 12, 3, 2),
-    new THREE.DodecahedronGeometry(1.75, 0),
-    new THREE.CylinderGeometry(1.4, 1.4, 2.9, 12, 4, true),
-    new THREE.SphereGeometry(1.7, 14, 10),
-    new THREE.TorusGeometry(1.55, 0.46, 12, 44)
-  ];
-  const mesh = new THREE.Mesh(
-    geometries[index],
-    new THREE.MeshBasicMaterial({
-      color: index === 3 || index === 8 ? 0x7c9aff : 0xe9edf5,
-      wireframe: true,
-      transparent: true,
-      opacity: index === 3 || index === 8 ? 0.7 : 0.42,
-      depthWrite: false
-    })
-  );
-  mesh.material.userData.baseOpacity = mesh.material.opacity;
-  group.add(mesh);
-  group.userData.materials = [mesh.material];
+  group.userData.materials = [];
+  group.userData.scanners = [];
 
-  const ring = new THREE.LineSegments(
-    new THREE.EdgesGeometry(new THREE.TorusGeometry(2.25, 0.025, 4, 64)),
+  const screen = makeCodeScreen(index, accentMaterial, iceMaterial);
+  screen.position.set(index % 2 ? 0.38 : -0.38, 0.12, 0.48);
+  screen.rotation.y = index % 2 ? -0.09 : 0.09;
+  group.add(screen);
+  group.userData.materials.push(...screen.userData.materials);
+  group.userData.scanners.push(...screen.userData.scanners);
+
+  const props = makeProgrammingProps(index, accentMaterial, iceMaterial);
+  props.position.z = 0.05;
+  group.add(props);
+
+  return group;
+}
+
+const PROGRAM_SCREENS = [
+  {
+    title: 'main.dart',
+    lines: [
+      'void main() => runApp(const Portfolio());',
+      '',
+      'class Portfolio extends StatelessWidget {',
+      '  const Portfolio({super.key});',
+      '  Widget build(context) => Gallery3D();',
+      '}'
+    ]
+  },
+  {
+    title: 'developer.json',
+    lines: [
+      '{',
+      '  "name": "Mohammad Zarif",',
+      '  "focus": ["Flutter", "Python"],',
+      '  "experience": "9+ years",',
+      '  "status": "available"',
+      '}'
+    ]
+  },
+  {
+    title: 'architecture.dart',
+    lines: [
+      'presentation -> domain -> data',
+      '',
+      'Result<Success, Failure> execute() {',
+      '  return repository.fetch();',
+      '}',
+      '// dependency flow: inward only'
+    ]
+  },
+  {
+    title: 'api_client.py',
+    lines: [
+      'async def request(endpoint, payload):',
+      '    token = await auth.refresh_if_needed()',
+      '    response = await client.post(',
+      '        endpoint, json=payload',
+      '    )',
+      '    return Result.ok(response.json())'
+    ]
+  },
+  {
+    title: 'pubspec.yaml',
+    lines: [
+      'name: verdict',
+      'version: 2.1.0',
+      'description: Typed result boundaries',
+      'environment:',
+      '  sdk: ^3.6.0',
+      'license: MIT'
+    ]
+  },
+  {
+    title: 'git log --graph',
+    lines: [
+      '* feat: ship mobile architecture',
+      '|\\',
+      '| * fix: make refresh atomic',
+      '* | perf: cache generated models',
+      '|/',
+      '* test: keep analysis at zero'
+    ]
+  },
+  {
+    title: 'stack.ts',
+    lines: [
+      'const stack = {',
+      '  mobile: ["Flutter", "Dart"],',
+      '  backend: ["Python", ".NET"],',
+      '  patterns: ["BLoC", "Clean Arch"],',
+      '  quality: ["CI", "Codegen", "Tests"]',
+      '};'
+    ]
+  },
+  {
+    title: 'research.py',
+    lines: [
+      'signals = preprocess(eeg_dataset)',
+      'features = extract_frequency_bands(signals)',
+      '',
+      'model.fit(features, diagnosis)',
+      'score = model.cross_validate(k=10)',
+      'print(score.mean())'
+    ]
+  },
+  {
+    title: 'contact.sh',
+    lines: [
+      '$ whoami',
+      'mohammad-zarif / senior-engineer',
+      '',
+      '$ ./start-a-project --remote',
+      'checking availability ........ ready',
+      'connection open on port 443'
+    ]
+  }
+];
+
+function makeCodeScreen(index, accentMaterial, iceMaterial) {
+  const group = new THREE.Group();
+  const spec = PROGRAM_SCREENS[index];
+  const texture = codeTexture(spec);
+  const screenMaterial = new THREE.MeshBasicMaterial({
+    map: texture,
+    transparent: true,
+    opacity: 0.88,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    toneMapped: false
+  });
+  screenMaterial.userData.baseOpacity = screenMaterial.opacity;
+  group.userData.materials = [screenMaterial];
+  group.userData.scanners = [];
+
+  const screen = new THREE.Mesh(new THREE.PlaneGeometry(4.65, 2.9), screenMaterial);
+  group.add(screen);
+
+  const frame = new THREE.LineSegments(
+    new THREE.EdgesGeometry(new THREE.BoxGeometry(4.82, 3.07, 0.14)),
+    iceMaterial
+  );
+  frame.position.z = -0.02;
+  group.add(frame);
+
+  const scanner = new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(-2.08, 0, 0.09),
+      new THREE.Vector3(2.08, 0, 0.09)
+    ]),
     accentMaterial
   );
-  ring.rotation.x = Math.PI * 0.5;
-  ring.rotation.y = index * 0.17;
-  group.add(ring);
-
-  if (index % 2 === 0) {
-    const axis = new THREE.Line(
-      new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(-2.6, 0, 0),
-        new THREE.Vector3(2.6, 0, 0)
-      ]),
-      iceMaterial
-    );
-    group.add(axis);
-  }
+  scanner.userData.phase = index * 0.71;
+  group.add(scanner);
+  group.userData.scanners.push(scanner);
   return group;
+}
+
+function codeTexture(spec) {
+  const surface = document.createElement('canvas');
+  surface.width = 1024;
+  surface.height = 640;
+  const context = surface.getContext('2d');
+  context.fillStyle = 'rgba(8, 10, 16, 0.96)';
+  context.fillRect(0, 0, surface.width, surface.height);
+
+  context.strokeStyle = 'rgba(124, 154, 255, 0.55)';
+  context.lineWidth = 3;
+  context.strokeRect(2, 2, surface.width - 4, surface.height - 4);
+  context.fillStyle = 'rgba(124, 154, 255, 0.10)';
+  context.fillRect(0, 0, surface.width, 84);
+
+  ['#FF6B7A', '#FFD166', '#6FE3A1'].forEach((color, dot) => {
+    context.beginPath();
+    context.arc(38 + dot * 34, 42, 9, 0, Math.PI * 2);
+    context.fillStyle = color;
+    context.fill();
+  });
+
+  context.font = '500 25px JetBrains Mono, monospace';
+  context.fillStyle = '#9BA5B8';
+  context.fillText(spec.title, 148, 51);
+
+  context.font = '24px JetBrains Mono, monospace';
+  spec.lines.forEach((line, row) => {
+    const y = 135 + row * 72;
+    context.fillStyle = 'rgba(100, 109, 128, 0.86)';
+    context.fillText(String(row + 1).padStart(2, '0'), 34, y);
+    context.fillStyle = row === 0 || line.trim().startsWith('$')
+      ? '#7C9AFF'
+      : row % 3 === 0 ? '#A78BFA' : '#E9EDF5';
+    context.fillText(line, 105, y);
+  });
+
+  const texture = new THREE.CanvasTexture(surface);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.minFilter = THREE.LinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.generateMipmaps = false;
+  return texture;
+}
+
+function makeProgrammingProps(index, accentMaterial, iceMaterial) {
+  const group = new THREE.Group();
+  if (index === 0) addBracketPair(group, accentMaterial);
+  if (index === 1) addPhone(group, iceMaterial, accentMaterial);
+  if (index === 2) addArchitectureStack(group, iceMaterial, accentMaterial);
+  if (index === 3) addApiGraph(group, iceMaterial, accentMaterial);
+  if (index === 4) addPackageCubes(group, iceMaterial, accentMaterial);
+  if (index === 5) addCommitGraph(group, iceMaterial, accentMaterial);
+  if (index === 6) addDatabaseStack(group, iceMaterial, accentMaterial);
+  if (index === 7) addNeuralGraph(group, iceMaterial, accentMaterial);
+  if (index === 8) addTerminalPrompt(group, iceMaterial, accentMaterial);
+  return group;
+}
+
+function addBracketPair(group, material) {
+  const geometry = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(-3.05, 1.45, 0), new THREE.Vector3(-3.42, 1.45, 0),
+    new THREE.Vector3(-3.42, 1.45, 0), new THREE.Vector3(-3.42, -1.45, 0),
+    new THREE.Vector3(-3.42, -1.45, 0), new THREE.Vector3(-3.05, -1.45, 0),
+    new THREE.Vector3(3.05, 1.45, 0), new THREE.Vector3(3.42, 1.45, 0),
+    new THREE.Vector3(3.42, 1.45, 0), new THREE.Vector3(3.42, -1.45, 0),
+    new THREE.Vector3(3.42, -1.45, 0), new THREE.Vector3(3.05, -1.45, 0)
+  ]);
+  group.add(new THREE.LineSegments(geometry, material));
+}
+
+function addPhone(group, frameMaterial, accentMaterial) {
+  const phone = new THREE.LineSegments(
+    new THREE.EdgesGeometry(new THREE.BoxGeometry(1.32, 2.55, 0.22)),
+    frameMaterial
+  );
+  phone.position.set(2.72, -0.05, -0.5);
+  phone.rotation.y = -0.25;
+  group.add(phone);
+  const home = new THREE.LineSegments(
+    new THREE.EdgesGeometry(new THREE.TorusGeometry(0.1, 0.015, 4, 20)),
+    accentMaterial
+  );
+  home.position.set(2.72, -1.05, -0.36);
+  group.add(home);
+}
+
+function addArchitectureStack(group, frameMaterial, accentMaterial) {
+  for (let layer = 0; layer < 3; layer++) {
+    const box = new THREE.LineSegments(
+      new THREE.EdgesGeometry(new THREE.BoxGeometry(2.2 - layer * 0.3, 0.42, 1.3)),
+      layer === 1 ? accentMaterial : frameMaterial
+    );
+    box.position.set(2.65, 0.72 - layer * 0.72, -0.58);
+    box.rotation.y = -0.32;
+    group.add(box);
+  }
+}
+
+function addApiGraph(group, frameMaterial, accentMaterial) {
+  const positions = [
+    [-3.0, 1.25], [-2.55, 0.05], [-3.1, -1.2],
+    [2.7, 1.1], [3.15, 0], [2.65, -1.15]
+  ];
+  positions.forEach((position, node) => {
+    const marker = new THREE.LineSegments(
+      new THREE.EdgesGeometry(new THREE.OctahedronGeometry(node % 3 === 1 ? 0.22 : 0.14, 0)),
+      node % 3 === 1 ? accentMaterial : frameMaterial
+    );
+    marker.position.set(position[0], position[1], -0.25);
+    group.add(marker);
+    const edge = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(position[0], position[1], -0.28),
+        new THREE.Vector3(position[0] > 0 ? 2.0 : -2.0, 0, -0.28)
+      ]),
+      node % 3 === 1 ? accentMaterial : frameMaterial
+    );
+    group.add(edge);
+  });
+}
+
+function addPackageCubes(group, frameMaterial, accentMaterial) {
+  [[-3.0, 1.05], [2.8, 1.0], [-2.85, -1.0], [2.95, -1.05]].forEach((position, cube) => {
+    const item = new THREE.LineSegments(
+      new THREE.EdgesGeometry(new THREE.BoxGeometry(0.65, 0.65, 0.65)),
+      cube === 1 ? accentMaterial : frameMaterial
+    );
+    item.position.set(position[0], position[1], -0.32);
+    item.rotation.set(cube * 0.21, cube * 0.35, cube * 0.12);
+    group.add(item);
+  });
+}
+
+function addCommitGraph(group, frameMaterial, accentMaterial) {
+  const commits = [[-3.15, 1.25], [-2.75, .45], [-3.08, -.35], [-2.55, -1.15], [2.85, .85], [3.08, 0], [2.72, -.9]];
+  commits.forEach((commit, index) => {
+    const point = new THREE.LineSegments(
+      new THREE.EdgesGeometry(new THREE.OctahedronGeometry(0.13, 0)),
+      index === 3 || index === 5 ? accentMaterial : frameMaterial
+    );
+    point.position.set(commit[0], commit[1], -0.3);
+    group.add(point);
+    if (index) {
+      const previous = commits[index - 1];
+      if (Math.sign(previous[0]) === Math.sign(commit[0])) {
+        group.add(new THREE.Line(
+          new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(previous[0], previous[1], -0.34),
+            new THREE.Vector3(commit[0], commit[1], -0.34)
+          ]), frameMaterial
+        ));
+      }
+    }
+  });
+}
+
+function addDatabaseStack(group, frameMaterial, accentMaterial) {
+  for (let level = 0; level < 3; level++) {
+    const database = new THREE.LineSegments(
+      new THREE.EdgesGeometry(new THREE.CylinderGeometry(0.62, 0.62, 0.42, 20)),
+      level === 0 ? accentMaterial : frameMaterial
+    );
+    database.position.set(2.85, 0.7 - level * 0.58, -0.48);
+    group.add(database);
+  }
+}
+
+function addNeuralGraph(group, frameMaterial, accentMaterial) {
+  const layers = [[-3.15, 3], [-2.7, 4], [2.72, 4], [3.12, 3]];
+  const nodes = [];
+  layers.forEach(([x, count], layer) => {
+    for (let i = 0; i < count; i++) {
+      const y = (i - (count - 1) / 2) * 0.62;
+      const node = new THREE.LineSegments(
+        new THREE.EdgesGeometry(new THREE.OctahedronGeometry(0.1, 0)),
+        layer === 2 ? accentMaterial : frameMaterial
+      );
+      node.position.set(x, y, -0.28);
+      group.add(node);
+      nodes.push([x, y]);
+    }
+  });
+  nodes.slice(0, 7).forEach((from, edge) => {
+    const to = nodes[(edge * 3 + 7) % nodes.length];
+    group.add(new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(from[0], from[1], -0.34),
+        new THREE.Vector3(to[0], to[1], -0.34)
+      ]), frameMaterial
+    ));
+  });
+}
+
+function addTerminalPrompt(group, frameMaterial, accentMaterial) {
+  const cursor = new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(2.55, -1.38, -0.2),
+      new THREE.Vector3(3.28, -1.38, -0.2)
+    ]), accentMaterial
+  );
+  group.add(cursor);
+  const arrow = new THREE.LineSegments(
+    new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(-3.25, 0.2, -0.2), new THREE.Vector3(-2.55, 0.2, -0.2),
+      new THREE.Vector3(-2.78, 0.48, -0.2), new THREE.Vector3(-2.5, 0.2, -0.2),
+      new THREE.Vector3(-2.5, 0.2, -0.2), new THREE.Vector3(-2.78, -0.08, -0.2)
+    ]), frameMaterial
+  );
+  group.add(arrow);
 }
 
 function makeDataPanel(side, accentMaterial, quietMaterial) {
