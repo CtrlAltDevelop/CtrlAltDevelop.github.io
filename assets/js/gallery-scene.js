@@ -254,8 +254,8 @@ const PROGRAM_SCREENS = [
   {
     title: 'main.dart',
     lines: [
+      '// Mohammad Zarif · @CtrlAltDevelop',
       'void main() => runApp(const Portfolio());',
-      '',
       'class Portfolio extends StatelessWidget {',
       '  const Portfolio({super.key});',
       '  Widget build(context) => Gallery3D();',
@@ -267,8 +267,8 @@ const PROGRAM_SCREENS = [
     lines: [
       '{',
       '  "name": "Mohammad Zarif",',
+      '  "github": "CtrlAltDevelop",',
       '  "focus": ["Flutter", "Python"],',
-      '  "experience": "9+ years",',
       '  "status": "available"',
       '}'
     ]
@@ -301,13 +301,14 @@ const PROGRAM_SCREENS = [
       'name: verdict',
       'version: 2.1.0',
       'description: Typed result boundaries',
+      'repository: github.com/CtrlAltDevelop/verdict',
       'environment:',
       '  sdk: ^3.6.0',
       'license: MIT'
     ]
   },
   {
-    title: 'git log --graph',
+    title: 'CtrlAltDevelop / git log --graph',
     lines: [
       '* feat: ship mobile architecture',
       '|\\',
@@ -342,8 +343,8 @@ const PROGRAM_SCREENS = [
   {
     title: 'contact.sh',
     lines: [
-      '$ whoami',
-      'mohammad-zarif / senior-engineer',
+      '$ gh api users/CtrlAltDevelop --jq .name',
+      'Mohammad Zarif',
       '',
       '$ ./start-a-project --remote',
       'checking availability ........ ready',
