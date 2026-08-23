@@ -843,7 +843,7 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
   filter: saturate(1.05) contrast(1.02);
   transition: opacity 1.2s var(--ease);
 }
-.gallery-stage__canvas.is-live { opacity: .72; }
+.gallery-stage__canvas.is-live { opacity: .82; }
 .gallery-stage::after {
   content: '';
   position: absolute;
@@ -856,5 +856,5 @@ main, .footer { position: relative; z-index: 2; }
 body.no-webgl .gallery-stage { display: none; }
 
 @media (max-width: 780px) {
-  .gallery-stage__canvas.is-live { opacity: .56; }
+  .gallery-stage__canvas.is-live { opacity: .64; }
 }

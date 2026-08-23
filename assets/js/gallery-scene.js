@@ -61,6 +61,10 @@ function boot(target) {
   addDepthSpine(world, spacing, sectionIds.length, accent, slate);
   addParticleField(world, seeded, ice, accent);
   addFloor(world, ice, accent);
+  addCeiling(world, ice, accent);
+  addPortalTunnel(world, spacing, sectionIds.length, ice, accent);
+  addSyntaxCloud(world, spacing, sectionIds.length, accent, ice);
+  const dataPackets = addDataPackets(world, seeded, accent);
 
   for (let i = 0; i < sectionIds.length; i++) {
     const side = i === 0 ? 1 : (i % 2 ? -1 : 1);
@@ -77,6 +81,7 @@ function boot(target) {
   const cameraGoal = new THREE.Vector3(0, 0, 16);
   let scrollProgress = 0;
   let activeIndex = -1;
+  let cameraYawGoal = 0;
   let raf = 0;
   let lastTime = performance.now();
 
@@ -104,6 +109,7 @@ function boot(target) {
     activeIndex = index;
     cameraGoal.x = (index % 2 ? 1 : -1) * Math.min(index, 1) * 0.72;
     cameraGoal.y = (index % 3 - 1) * 0.16;
+    cameraYawGoal = index === 0 ? 0 : (index % 2 ? 0.105 : -0.105);
   }
 
   function resize() {
@@ -130,7 +136,7 @@ function boot(target) {
     camera.position.x += (cameraGoal.x + pointer.x * 0.38 - camera.position.x) * ease;
     camera.position.y += (cameraGoal.y - pointer.y * 0.24 - camera.position.y) * ease;
     camera.position.z += (cameraGoal.z - camera.position.z) * ease;
-    camera.rotation.y += ((-pointer.x * 0.018) - camera.rotation.y) * ease;
+    camera.rotation.y += ((cameraYawGoal - pointer.x * 0.018) - camera.rotation.y) * ease;
     camera.rotation.x += ((pointer.y * 0.012) - camera.rotation.x) * ease;
 
     const time = now * 0.001;
@@ -148,6 +154,13 @@ function boot(target) {
         material.opacity = material.userData.baseOpacity * (0.32 + near * 0.9);
       });
     }
+
+    dataPackets.forEach((packet) => {
+      const travel = (time * packet.userData.speed + packet.userData.offset) % 126;
+      packet.position.z = 12 - travel;
+      packet.rotation.x += dt * 0.9;
+      packet.rotation.y += dt * 1.1;
+    });
 
     world.rotation.z = Math.sin(time * 0.08) * 0.006;
     renderer.render(scene, camera);
@@ -678,6 +691,160 @@ function addFloor(world, ice, accent) {
   grid.material.opacity = 0.055;
   grid.material.depthWrite = false;
   world.add(grid);
+}
+
+function addCeiling(world, ice, accent) {
+  const grid = new THREE.GridHelper(150, 75, accent, ice);
+  grid.position.set(0, 4.15, -48);
+  grid.rotation.z = Math.PI;
+  grid.material.transparent = true;
+  grid.material.opacity = 0.028;
+  grid.material.depthWrite = false;
+  world.add(grid);
+}
+
+function addPortalTunnel(world, spacing, count, ice, accent) {
+  const quiet = lineMaterial(ice, 0.075);
+  const active = lineMaterial(accent, 0.24);
+
+  for (let index = 0; index < count; index++) {
+    const z = 4 - index * spacing;
+    const portal = new THREE.Group();
+    portal.position.z = z;
+
+    const room = new THREE.LineSegments(
+      new THREE.EdgesGeometry(new THREE.BoxGeometry(13.4, 8.3, 0.16)),
+      index === 0 || index === count - 1 ? active : quiet
+    );
+    portal.add(room);
+
+    const innerRoom = new THREE.LineSegments(
+      new THREE.EdgesGeometry(new THREE.BoxGeometry(11.8, 7.15, 0.08)),
+      quiet
+    );
+    innerRoom.position.z = -0.35;
+    portal.add(innerRoom);
+
+    const syntax = index % 3;
+    if (syntax === 0) addPortalBrackets(portal, active, 'square');
+    if (syntax === 1) addPortalBrackets(portal, active, 'curly');
+    if (syntax === 2) addPortalBrackets(portal, active, 'angle');
+    world.add(portal);
+  }
+
+  const rails = [-6.7, 6.7];
+  rails.forEach((x) => {
+    [-4.15, 4.15].forEach((y) => {
+      world.add(new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(x, y, 10),
+          new THREE.Vector3(x, y, 4 - (count - 1) * spacing - 8)
+        ]), quiet
+      ));
+    });
+  });
+}
+
+function addPortalBrackets(portal, material, type) {
+  const points = [];
+  if (type === 'square') {
+    points.push(
+      [-5.45, 2.85], [-5.9, 2.85], [-5.9, 2.85], [-5.9, -2.85], [-5.9, -2.85], [-5.45, -2.85],
+      [5.45, 2.85], [5.9, 2.85], [5.9, 2.85], [5.9, -2.85], [5.9, -2.85], [5.45, -2.85]
+    );
+  }
+  if (type === 'angle') {
+    points.push(
+      [-5.25, 2.85], [-6.05, 0], [-6.05, 0], [-5.25, -2.85],
+      [5.25, 2.85], [6.05, 0], [6.05, 0], [5.25, -2.85]
+    );
+  }
+  if (type === 'curly') {
+    points.push(
+      [-5.4, 3], [-5.85, 2.45], [-5.85, 2.45], [-5.7, 0.55], [-5.7, 0.55], [-6.08, 0],
+      [-6.08, 0], [-5.7, -0.55], [-5.7, -0.55], [-5.85, -2.45], [-5.85, -2.45], [-5.4, -3],
+      [5.4, 3], [5.85, 2.45], [5.85, 2.45], [5.7, 0.55], [5.7, 0.55], [6.08, 0],
+      [6.08, 0], [5.7, -0.55], [5.7, -0.55], [5.85, -2.45], [5.85, -2.45], [5.4, -3]
+    );
+  }
+  const geometry = new THREE.BufferGeometry().setFromPoints(
+    points.map(([x, y]) => new THREE.Vector3(x, y, 0.2))
+  );
+  portal.add(new THREE.LineSegments(geometry, material));
+}
+
+function addSyntaxCloud(world, spacing, count, accent, ice) {
+  const tokens = ['{ }', '</>', '=>', '[ ]', 'async', 'git', 'API', 'Result<T>', '0xFF'];
+  for (let index = 0; index < count; index++) {
+    const token = tokens[index % tokens.length];
+    const texture = syntaxTexture(token, index % 3 === 0 ? '#7C9AFF' : '#9BA5B8');
+    const material = new THREE.MeshBasicMaterial({
+      map: texture,
+      transparent: true,
+      opacity: index % 3 === 0 ? 0.38 : 0.2,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+      toneMapped: false
+    });
+    const ratio = token.length > 5 ? 2.6 : 1.75;
+    const label = new THREE.Mesh(new THREE.PlaneGeometry(ratio, 0.72), material);
+    const side = index % 2 ? -1 : 1;
+    label.position.set(side * (6.4 + (index % 3) * 0.4), 2.7 - (index % 4) * 1.7, 1 - index * spacing);
+    label.rotation.y = side * -0.46;
+    world.add(label);
+  }
+
+  const signature = syntaxTexture('CTRL ALT DEVELOP', '#7C9AFF');
+  const signatureMaterial = new THREE.MeshBasicMaterial({
+    map: signature,
+    transparent: true,
+    opacity: 0.42,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    toneMapped: false
+  });
+  const signaturePanel = new THREE.Mesh(new THREE.PlaneGeometry(4.4, 0.78), signatureMaterial);
+  signaturePanel.position.set(0, 3.15, -spacing * 4 + 1);
+  world.add(signaturePanel);
+}
+
+function syntaxTexture(text, color) {
+  const surface = document.createElement('canvas');
+  surface.width = 640;
+  surface.height = 160;
+  const context = surface.getContext('2d');
+  context.clearRect(0, 0, surface.width, surface.height);
+  context.font = '600 58px JetBrains Mono, monospace';
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.fillStyle = color;
+  context.fillText(text, surface.width / 2, surface.height / 2);
+  const texture = new THREE.CanvasTexture(surface);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.minFilter = THREE.LinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.generateMipmaps = false;
+  return texture;
+}
+
+function addDataPackets(world, random, accent) {
+  const packets = [];
+  const material = new THREE.MeshBasicMaterial({
+    color: accent,
+    transparent: true,
+    opacity: 0.72,
+    depthWrite: false
+  });
+  for (let index = 0; index < 18; index++) {
+    const packet = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.32), material);
+    packet.position.x = (random() - 0.5) * 5.6;
+    packet.position.y = (random() - 0.5) * 5.2;
+    packet.userData.offset = random() * 126;
+    packet.userData.speed = 2.4 + random() * 3.8;
+    world.add(packet);
+    packets.push(packet);
+  }
+  return packets;
 }
 
 function lineMaterial(color, opacity) {
