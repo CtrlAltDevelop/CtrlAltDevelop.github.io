@@ -16,9 +16,15 @@
 <meta property="og:title" content="Mohammad Zarif — Senior Flutter &amp; Python Developer for Hire">
 <meta property="og:description" content="9+ years developing cross-platform Flutter apps and the Python and .NET backends that power them, plus nine open-source Dart packages on pub.dev. Available for freelance and contract work.">
 <meta property="og:url" content="https://ctrlaltdevelop.github.io/">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="https://ctrlaltdevelop.github.io/assets/og.png">
+<meta property="og:image:width" content="1731">
+<meta property="og:image:height" content="909">
+<meta property="og:image:alt" content="Mohammad Zarif portfolio — a wireframe 3D gallery corridor with an acid-yellow geometric exhibit">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Mohammad Zarif — Senior Flutter &amp; Python Developer for Hire">
 <meta name="twitter:description" content="9+ years developing cross-platform Flutter apps and the Python and .NET backends that power them, plus nine open-source Dart packages on pub.dev. Available for freelance and contract work.">
+<meta name="twitter:image" content="https://ctrlaltdevelop.github.io/assets/og.png">
+<meta name="twitter:image:alt" content="Mohammad Zarif portfolio — a wireframe 3D gallery corridor with an acid-yellow geometric exhibit">
 
 <link rel="canonical" href="https://ctrlaltdevelop.github.io/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23111726'/%3E%3Ctext x='16' y='22' font-family='Helvetica,Arial,sans-serif' font-size='15' font-weight='bold' fill='%237C9AFF' text-anchor='middle'%3EMZ%3C/text%3E%3C/svg%3E">
@@ -67,6 +73,16 @@
 
 <body>
 <div class="grain" aria-hidden="true"></div>
+
+<div class="gallery-stage" aria-hidden="true">
+  <canvas class="gallery-stage__canvas" id="gallery-canvas"></canvas>
+  <div class="scene-hud">
+    <span class="scene-hud__chapter" id="scene-chapter">00 / 08</span>
+    <span class="scene-hud__title" id="scene-title">Introduction</span>
+    <span class="scene-hud__track"><i id="scene-depth"></i></span>
+    <span class="scene-hud__axis">Z — DEPTH</span>
+  </div>
+</div>
 
 <!-- ─────────────────────────────  PRELOADER  ───────────────────────────── -->
 <div class="loader" id="loader" role="status" aria-live="polite" aria-label="Loading">
@@ -123,7 +139,6 @@
 
 <!-- ─────────────────────────────  HERO  ───────────────────────────── -->
 <section class="hero" id="hero">
-  <canvas class="hero__canvas" id="hero-canvas" aria-hidden="true"></canvas>
   <div class="hero__glow" aria-hidden="true"></div>
   <div class="hero__fade" aria-hidden="true"></div>
 
@@ -761,7 +776,6 @@
 
 <!-- ─────────────────────────────  RESEARCH  ───────────────────────────── -->
 <section class="section section--research" id="research">
-  <canvas class="research__canvas" id="neural-canvas" aria-hidden="true"></canvas>
   <div class="wrap">
     <header class="section__head reveal">
       <span class="section__num">07</span>
@@ -829,7 +843,6 @@
 
 <!-- ─────────────────────────────  CONTACT  ───────────────────────────── -->
 <section class="section section--contact" id="contact">
-  <canvas class="contact__canvas" id="contact-canvas" aria-hidden="true"></canvas>
   <div class="wrap">
     <div class="contact reveal">
       <span class="section__num">08</span>
@@ -858,9 +871,7 @@
   </div>
 </footer>
 
-<script type="module" src="assets/js/hero-scene.js"></script>
-<script type="module" src="assets/js/neural-scene.js"></script>
-<script type="module" src="assets/js/contact-scene.js"></script>
+<script type="module" src="assets/js/gallery-scene.js"></script>
 <script src="assets/js/main.js" defer></script>
 </body>
 </html>
