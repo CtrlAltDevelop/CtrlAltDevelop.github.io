@@ -69,6 +69,10 @@ function boot(target) {
   addCeiling(world, ice, accent);
   addPortalTunnel(world, spacing, sectionIds.length, ice, accent);
   addSyntaxCloud(world, spacing, sectionIds.length, accent, ice);
+  addExhibitLabels(world, spacing, accent);
+  addCircuitWalls(world, spacing, sectionIds.length, ice, accent);
+  addKeycaps(world, accent, ice);
+  addBuildBadges(world, spacing, accent);
   const dataPackets = addDataPackets(world, seeded, accent);
 
   for (let i = 0; i < sectionIds.length; i++) {
@@ -830,6 +834,174 @@ function syntaxTexture(text, color) {
   texture.magFilter = THREE.LinearFilter;
   texture.generateMipmaps = false;
   return texture;
+}
+
+const EXHIBIT_META = [
+  ['00 / BOOT', 'main.dart'],
+  ['01 / PROFILE', 'developer.json'],
+  ['02 / ARCH', 'clean-architecture'],
+  ['03 / WORK', 'api_client.py'],
+  ['04 / PACKAGES', 'pub.dev/CtrlAltDevelop'],
+  ['05 / HISTORY', 'git log --graph'],
+  ['06 / STACK', 'flutter + python + dotnet'],
+  ['07 / RESEARCH', 'signal_pipeline.py'],
+  ['08 / CONNECT', 'contact.sh']
+];
+
+function addExhibitLabels(world, spacing, accent) {
+  EXHIBIT_META.forEach(([title, meta], index) => {
+    const texture = panelTexture(title, meta, '#7C9AFF');
+    const material = new THREE.MeshBasicMaterial({
+      map: texture,
+      transparent: true,
+      opacity: 0.62,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+      toneMapped: false
+    });
+    const panel = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 0.72), material);
+    const side = index % 2 ? -1 : 1;
+    panel.position.set(side * 3.75, 3.28, 4.45 - index * spacing);
+    panel.rotation.y = side * -0.12;
+    world.add(panel);
+
+    const marker = new THREE.LineSegments(
+      new THREE.EdgesGeometry(new THREE.BoxGeometry(4.35, 0.86, 0.08)),
+      lineMaterial(accent, 0.25)
+    );
+    marker.position.copy(panel.position);
+    marker.rotation.copy(panel.rotation);
+    marker.position.z -= 0.05;
+    world.add(marker);
+  });
+}
+
+function panelTexture(title, meta, color) {
+  const surface = document.createElement('canvas');
+  surface.width = 900;
+  surface.height = 160;
+  const context = surface.getContext('2d');
+  context.fillStyle = 'rgba(8, 10, 16, 0.88)';
+  context.fillRect(0, 0, surface.width, surface.height);
+  context.fillStyle = color;
+  context.font = '700 37px JetBrains Mono, monospace';
+  context.fillText(title, 36, 70);
+  context.fillStyle = '#9BA5B8';
+  context.font = '500 25px JetBrains Mono, monospace';
+  context.fillText(meta, 36, 119);
+  context.strokeStyle = 'rgba(124, 154, 255, 0.62)';
+  context.lineWidth = 3;
+  context.strokeRect(2, 2, surface.width - 4, surface.height - 4);
+  const texture = new THREE.CanvasTexture(surface);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.minFilter = THREE.LinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.generateMipmaps = false;
+  return texture;
+}
+
+function addCircuitWalls(world, spacing, count, ice, accent) {
+  const wire = lineMaterial(ice, 0.095);
+  const live = lineMaterial(accent, 0.32);
+  const endZ = 4 - (count - 1) * spacing;
+
+  [-1, 1].forEach((side) => {
+    for (let circuit = 0; circuit < 4; circuit++) {
+      const x = side * (6.18 + circuit * 0.13);
+      const y = -2.7 + circuit * 1.72;
+      const points = [];
+      for (let room = 0; room < count; room++) {
+        const z = 4 - room * spacing;
+        const offsetY = room % 2 ? 0.46 : -0.34;
+        points.push(
+          new THREE.Vector3(x, y, z + 4.2),
+          new THREE.Vector3(x, y, z + 0.8),
+          new THREE.Vector3(x, y, z + 0.8),
+          new THREE.Vector3(x, y + offsetY, z + 0.25),
+          new THREE.Vector3(x, y + offsetY, z + 0.25),
+          new THREE.Vector3(x, y + offsetY, Math.max(endZ - 2, z - 4.5))
+        );
+      }
+      world.add(new THREE.LineSegments(
+        new THREE.BufferGeometry().setFromPoints(points),
+        circuit === 1 ? live : wire
+      ));
+    }
+
+    for (let room = 0; room < count; room++) {
+      const node = new THREE.LineSegments(
+        new THREE.EdgesGeometry(new THREE.OctahedronGeometry(room % 3 === 0 ? 0.16 : 0.09, 0)),
+        room % 3 === 0 ? live : wire
+      );
+      node.position.set(side * 6.2, -2.7 + (room % 4) * 1.72, 4 - room * spacing + 0.25);
+      world.add(node);
+    }
+  });
+}
+
+function addKeycaps(world, accent, ice) {
+  const edge = lineMaterial(accent, 0.52);
+  const deck = new THREE.Group();
+  deck.position.set(-3.65, -3.22, 1.1);
+  deck.rotation.y = 0.12;
+
+  ['CTRL', 'ALT', 'DEV'].forEach((label, index) => {
+    const key = new THREE.LineSegments(
+      new THREE.EdgesGeometry(new THREE.BoxGeometry(1.08, 0.36, 0.92)),
+      index === 2 ? edge : lineMaterial(ice, 0.3)
+    );
+    key.position.x = index * 1.22;
+    deck.add(key);
+
+    const texture = syntaxTexture(label, index === 2 ? '#7C9AFF' : '#E9EDF5');
+    const material = new THREE.MeshBasicMaterial({
+      map: texture,
+      transparent: true,
+      opacity: 0.72,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+      toneMapped: false
+    });
+    const top = new THREE.Mesh(new THREE.PlaneGeometry(0.82, 0.35), material);
+    top.position.set(index * 1.22, 0.19, 0);
+    top.rotation.x = -Math.PI * 0.5;
+    deck.add(top);
+  });
+  world.add(deck);
+}
+
+function addBuildBadges(world, spacing, accent) {
+  const badges = [
+    ['BUILD', 'PASS'],
+    ['ANALYZE', '0 ISSUES'],
+    ['TESTS', '132 SUITES']
+  ];
+  badges.forEach(([title, value], index) => {
+    const texture = panelTexture(title, value, '#7C9AFF');
+    const material = new THREE.MeshBasicMaterial({
+      map: texture,
+      transparent: true,
+      opacity: index === 0 ? 0.68 : 0.44,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+      toneMapped: false
+    });
+    const badge = new THREE.Mesh(new THREE.PlaneGeometry(2.05, 0.62), material);
+    badge.position.set(4.55, -2.2 - index * 0.78, 4 - 3 * spacing + 0.7);
+    badge.rotation.y = -0.3;
+    world.add(badge);
+
+    if (index === 0) {
+      const pulse = new THREE.LineSegments(
+        new THREE.EdgesGeometry(new THREE.BoxGeometry(2.16, 0.72, 0.08)),
+        lineMaterial(accent, 0.38)
+      );
+      pulse.position.copy(badge.position);
+      pulse.rotation.copy(badge.rotation);
+      pulse.position.z -= 0.04;
+      world.add(pulse);
+    }
+  });
 }
 
 function addDataPackets(world, random, accent) {
