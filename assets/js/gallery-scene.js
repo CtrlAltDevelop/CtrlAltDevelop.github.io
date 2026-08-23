@@ -21,20 +21,16 @@ function supportsWebGL() {
 
 function boot(target) {
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const accent = 0xecff3e;
-  const ice = 0xcfdee5;
-  const slate = 0x51606a;
+  const accent = 0x7c9aff;
+  const ice = 0xe9edf5;
+  const slate = 0x646d80;
   const sectionIds = [
     'hero', 'about', 'approach', 'work', 'open-source',
     'experience', 'stack', 'research', 'contact'
   ];
-  const sectionNames = [
-    'Introduction', 'About', 'Method', 'Selected work', 'Open source',
-    'Experience', 'Technology', 'Research', 'Contact'
-  ];
   const spacing = 13;
   const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x08090d, 0.023);
+  scene.fog = new THREE.FogExp2(0x06070a, 0.023);
 
   const camera = new THREE.PerspectiveCamera(47, 1, 0.1, 180);
   camera.position.set(0, 0, 16);
@@ -52,7 +48,7 @@ function boot(target) {
     return;
   }
 
-  renderer.setClearColor(0x08090d, 0);
+  renderer.setClearColor(0x06070a, 0);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
@@ -77,9 +73,6 @@ function boot(target) {
     exhibits.push(exhibit);
   }
 
-  const chapterEl = document.getElementById('scene-chapter');
-  const titleEl = document.getElementById('scene-title');
-  const depthEl = document.getElementById('scene-depth');
   const pointer = new THREE.Vector2();
   const cameraGoal = new THREE.Vector3(0, 0, 16);
   let scrollProgress = 0;
@@ -103,7 +96,6 @@ function boot(target) {
     const scenePosition = Math.min(sectionIds.length - 1, next + local);
     cameraGoal.z = 16 - scenePosition * spacing;
     setActive(next);
-    if (depthEl) depthEl.style.transform = `scaleX(${scrollProgress.toFixed(4)})`;
     if (reduced) renderStatic();
   }
 
@@ -112,8 +104,6 @@ function boot(target) {
     activeIndex = index;
     cameraGoal.x = (index % 2 ? 1 : -1) * Math.min(index, 1) * 0.72;
     cameraGoal.y = (index % 3 - 1) * 0.16;
-    if (chapterEl) chapterEl.textContent = `${String(index).padStart(2, '0')} / 08`;
-    if (titleEl) titleEl.textContent = sectionNames[index];
   }
 
   function resize() {
@@ -252,7 +242,7 @@ function makeSignature(index, accentMaterial, iceMaterial) {
   const mesh = new THREE.Mesh(
     geometries[index],
     new THREE.MeshBasicMaterial({
-      color: index === 3 || index === 8 ? 0xecff3e : 0xcfdee5,
+      color: index === 3 || index === 8 ? 0x7c9aff : 0xe9edf5,
       wireframe: true,
       transparent: true,
       opacity: index === 3 || index === 8 ? 0.7 : 0.42,
