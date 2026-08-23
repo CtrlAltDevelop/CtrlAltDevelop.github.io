@@ -318,15 +318,15 @@ const PROGRAM_SCREENS = [
     ]
   },
   {
-    title: 'pubspec.yaml',
+    title: 'packages.dart',
     lines: [
-      'name: verdict',
-      'version: 2.1.0',
-      'description: Typed result boundaries',
-      'repository: github.com/CtrlAltDevelop/verdict',
-      'environment:',
-      '  sdk: ^3.6.0',
-      'license: MIT'
+      '// pub.dev · @CtrlAltDevelop',
+      'const latest = <String>[',
+      '  "dpop_client@1.0.0",',
+      '  "safe_json_cast@1.0.0",',
+      '  "indicator_tab_bar@1.0.0",',
+      '];',
+      '// source: github.com/CtrlAltDevelop'
     ]
   },
   {
@@ -536,10 +536,13 @@ function addApiGraph(group, frameMaterial, accentMaterial) {
 }
 
 function addPackageCubes(group, frameMaterial, accentMaterial) {
-  [[-3.0, 1.05], [2.8, 1.0], [-2.85, -1.0], [2.95, -1.05]].forEach((position, cube) => {
+  [
+    [-3.15, 1.25], [-2.6, 0], [-3.05, -1.25],
+    [3.1, 1.3], [2.6, 0.45], [3.05, -0.55], [2.65, -1.35]
+  ].forEach((position, cube) => {
     const item = new THREE.LineSegments(
-      new THREE.EdgesGeometry(new THREE.BoxGeometry(0.65, 0.65, 0.65)),
-      cube === 1 ? accentMaterial : frameMaterial
+      new THREE.EdgesGeometry(new THREE.BoxGeometry(0.5, 0.5, 0.5)),
+      cube === 1 || cube === 4 ? accentMaterial : frameMaterial
     );
     item.position.set(position[0], position[1], -0.32);
     item.rotation.set(cube * 0.21, cube * 0.35, cube * 0.12);
