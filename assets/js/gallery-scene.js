@@ -2,11 +2,16 @@ import * as THREE from 'three';
 
 const canvas = document.getElementById('gallery-canvas');
 
-if (!canvas || !supportsWebGL()) {
-  document.body.classList.add('no-webgl');
-} else {
-  boot(canvas);
-}
+// Defer boot until the module has finished evaluating. The programming-widget
+// definitions below are const-backed and must be initialized before the first
+// exhibit asks for its code-screen data.
+queueMicrotask(() => {
+  if (!canvas || !supportsWebGL()) {
+    document.body.classList.add('no-webgl');
+  } else {
+    boot(canvas);
+  }
+});
 
 function supportsWebGL() {
   try {
