@@ -73,7 +73,9 @@ function boot(target) {
   addCircuitWalls(world, spacing, sectionIds.length, ice, accent);
   addKeycaps(world, accent, ice);
   addBuildBadges(world, spacing, accent);
-  const dataPackets = addDataPackets(world, seeded, accent);
+  const flowPackets = addApplicationFlow(
+    world, spacing, sectionIds.length, seeded, accent, ice, slate
+  );
 
   for (let i = 0; i < sectionIds.length; i++) {
     const side = i === 0 ? 1 : (i % 2 ? -1 : 1);
@@ -93,21 +95,39 @@ function boot(target) {
   let cameraYawGoal = 0;
   let raf = 0;
   let lastTime = performance.now();
+  const packetAxis = new THREE.Vector3(0, 0, 1);
+  const packetTangent = new THREE.Vector3();
+
+  function magneticTravel(value) {
+    const hold = 0.18;
+    if (value <= hold) return 0;
+    if (value >= 1 - hold) return 1;
+    const progress = (value - hold) / (1 - hold * 2);
+    return progress * progress * (3 - 2 * progress);
+  }
 
   function updateScroll() {
     const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
     scrollProgress = Math.min(1, Math.max(0, window.scrollY / max));
-    const readingLine = window.scrollY + window.innerHeight * 0.44;
+    const snapOffset = Math.min(72, window.innerHeight * 0.12);
+    const readingLine = window.scrollY + snapOffset + 2;
     let next = 0;
     for (let i = 0; i < sectionIds.length; i++) {
       const section = document.getElementById(sectionIds[i]);
       if (section && section.offsetTop <= readingLine) next = i;
     }
     const currentSection = document.getElementById(sectionIds[next]);
+    const followingSection = next < sectionIds.length - 1
+      ? document.getElementById(sectionIds[next + 1])
+      : null;
+    const travelStart = currentSection ? currentSection.offsetTop : 0;
+    const travelEnd = followingSection
+      ? followingSection.offsetTop
+      : travelStart + (currentSection ? currentSection.offsetHeight : window.innerHeight);
     const local = currentSection
-      ? Math.min(1, Math.max(0, (readingLine - currentSection.offsetTop) / currentSection.offsetHeight))
+      ? Math.min(1, Math.max(0, (readingLine - travelStart) / Math.max(1, travelEnd - travelStart)))
       : 0;
-    const scenePosition = Math.min(sectionIds.length - 1, next + local);
+    const scenePosition = Math.min(sectionIds.length - 1, next + magneticTravel(local));
     cameraGoal.z = 16 - scenePosition * spacing;
     setActive(next);
     if (reduced) renderStatic();
@@ -140,7 +160,7 @@ function boot(target) {
     raf = requestAnimationFrame(animate);
     const dt = Math.min(0.04, (now - lastTime) / 1000);
     lastTime = now;
-    const ease = 1 - Math.pow(0.001, dt);
+    const ease = 1 - Math.pow(0.045, dt);
 
     camera.position.x += (cameraGoal.x + pointer.x * 0.38 - camera.position.x) * ease;
     camera.position.y += (cameraGoal.y - pointer.y * 0.24 - camera.position.y) * ease;
@@ -164,11 +184,15 @@ function boot(target) {
       });
     }
 
-    dataPackets.forEach((packet) => {
-      const travel = (time * packet.userData.speed + packet.userData.offset) % 126;
-      packet.position.z = 12 - travel;
-      packet.rotation.x += dt * 0.9;
-      packet.rotation.y += dt * 1.1;
+    flowPackets.forEach((packet) => {
+      const travel = (time * packet.userData.speed + packet.userData.offset) % 1;
+      const progress = packet.userData.reverse ? 1 - travel : travel;
+      packet.userData.curve.getPointAt(progress, packet.position);
+      packet.userData.curve.getTangentAt(progress, packetTangent);
+      if (packet.userData.reverse) packetTangent.multiplyScalar(-1);
+      packet.quaternion.setFromUnitVectors(packetAxis, packetTangent.normalize());
+      const pulse = 0.82 + Math.sin(time * 5 + packet.userData.phase) * 0.18;
+      packet.scale.setScalar(pulse);
     });
 
     world.rotation.z = Math.sin(time * 0.08) * 0.006;
@@ -274,7 +298,7 @@ function makeSignature(index, accentMaterial, iceMaterial) {
 
 const PROGRAM_SCREENS = [
   {
-    title: 'main.dart',
+    title: 'CTRL ALT DEVELOP · Flutter / main.dart',
     lines: [
       '// Mohammad Zarif · @CtrlAltDevelop',
       'void main() => runApp(const Portfolio());',
@@ -285,18 +309,20 @@ const PROGRAM_SCREENS = [
     ]
   },
   {
-    title: 'developer.json',
+    title: '@CtrlAltDevelop · Flutter / mobile_flow.dart',
     lines: [
-      '{',
-      '  "name": "Mohammad Zarif",',
-      '  "github": "CtrlAltDevelop",',
-      '  "focus": ["Flutter", "Python"],',
-      '  "status": "available"',
-      '}'
+      'on<SubmitOrder>((event, emit) async {',
+      '  emit(const OrderState.loading());',
+      '  final result = await placeOrder(event);',
+      '  result.fold(',
+      '    (failure) => emit(OrderState.error(failure)),',
+      '    (order) => emit(OrderState.ready(order)),',
+      '  );',
+      '});'
     ]
   },
   {
-    title: 'architecture.dart',
+    title: 'CTRL ALT DEVELOP · Dart / architecture.dart',
     lines: [
       'presentation -> domain -> data',
       '',
@@ -307,18 +333,19 @@ const PROGRAM_SCREENS = [
     ]
   },
   {
-    title: 'api_client.py',
+    title: '@CtrlAltDevelop · Python / api_client.py',
     lines: [
-      'async def request(endpoint, payload):',
-      '    token = await auth.refresh_if_needed()',
-      '    response = await client.post(',
-      '        endpoint, json=payload',
-      '    )',
-      '    return Result.ok(response.json())'
+      '@router.post("/v1/orders")',
+      'async def create_order(',
+      '    body: OrderIn,',
+      '    user = Depends(dpop_auth),',
+      '):',
+      '    result = await service.execute(body, user)',
+      '    return OrderOut.from_domain(result)'
     ]
   },
   {
-    title: 'packages.dart',
+    title: 'CTRL ALT DEVELOP · Dart / packages.dart',
     lines: [
       '// pub.dev · @CtrlAltDevelop',
       'const latest = <String>[',
@@ -330,7 +357,7 @@ const PROGRAM_SCREENS = [
     ]
   },
   {
-    title: 'CtrlAltDevelop / git log --graph',
+    title: '@CtrlAltDevelop · git log --graph',
     lines: [
       '* feat: ship mobile architecture',
       '|\\',
@@ -341,7 +368,7 @@ const PROGRAM_SCREENS = [
     ]
   },
   {
-    title: 'stack.ts',
+    title: 'CTRL ALT DEVELOP · flutter_python.yaml',
     lines: [
       'const stack = {',
       '  mobile: ["Flutter", "Dart"],',
@@ -352,7 +379,7 @@ const PROGRAM_SCREENS = [
     ]
   },
   {
-    title: 'research.py',
+    title: '@CtrlAltDevelop · Python / research.py',
     lines: [
       'signals = preprocess(eeg_dataset)',
       'features = extract_frequency_bands(signals)',
@@ -363,7 +390,7 @@ const PROGRAM_SCREENS = [
     ]
   },
   {
-    title: 'contact.sh',
+    title: 'CTRL ALT DEVELOP · terminal',
     lines: [
       '$ gh api users/CtrlAltDevelop --jq .name',
       'Mohammad Zarif',
@@ -498,6 +525,38 @@ function addPhone(group, frameMaterial, accentMaterial) {
   );
   home.position.set(2.72, -1.05, -0.36);
   group.add(home);
+
+  const screen = new THREE.LineSegments(
+    new THREE.EdgesGeometry(new THREE.BoxGeometry(1.06, 1.86, 0.025)),
+    accentMaterial
+  );
+  screen.position.set(2.72, 0.06, -0.36);
+  screen.rotation.y = -0.25;
+  group.add(screen);
+
+  for (let row = 0; row < 4; row++) {
+    const width = row === 0 ? 0.62 : 0.78 - row * 0.08;
+    const uiLine = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(-width * 0.5, 0, 0),
+        new THREE.Vector3(width * 0.5, 0, 0)
+      ]),
+      row === 0 ? accentMaterial : frameMaterial
+    );
+    uiLine.position.set(2.72, 0.66 - row * 0.35, -0.30);
+    uiLine.rotation.y = -0.25;
+    group.add(uiLine);
+  }
+
+  for (let tab = 0; tab < 3; tab++) {
+    const navItem = new THREE.LineSegments(
+      new THREE.EdgesGeometry(new THREE.BoxGeometry(0.16, 0.12, 0.035)),
+      tab === 1 ? accentMaterial : frameMaterial
+    );
+    navItem.position.set(2.42 + tab * 0.3, -0.7, -0.29);
+    navItem.rotation.y = -0.25;
+    group.add(navItem);
+  }
 }
 
 function addArchitectureStack(group, frameMaterial, accentMaterial) {
@@ -786,38 +845,55 @@ function addPortalBrackets(portal, material, type) {
 }
 
 function addSyntaxCloud(world, spacing, count, accent, ice) {
-  const tokens = ['{ }', '</>', '=>', '[ ]', 'async', 'git', 'API', 'Result<T>', '0xFF'];
-  for (let index = 0; index < count; index++) {
+  const tokens = [
+    'Flutter', 'async def', 'BLoC', 'FastAPI', 'Widget', 'await',
+    'pub.dev', 'Result<T>', '@CtrlAltDevelop', 'Dart', 'Python', 'Dio',
+    'pytest', 'Clean Arch', 'REST', 'git push', '{ }', '=>'
+  ];
+  for (let index = 0; index < count * 2; index++) {
     const token = tokens[index % tokens.length];
-    const texture = syntaxTexture(token, index % 3 === 0 ? '#7C9AFF' : '#9BA5B8');
+    const section = Math.floor(index / 2);
+    const layer = index % 2;
+    const texture = syntaxTexture(token, index % 4 === 0 ? '#7C9AFF' : '#9BA5B8');
     const material = new THREE.MeshBasicMaterial({
       map: texture,
       transparent: true,
-      opacity: index % 3 === 0 ? 0.38 : 0.2,
+      opacity: index % 4 === 0 ? 0.34 : 0.17,
       depthWrite: false,
       side: THREE.DoubleSide,
       toneMapped: false
     });
-    const ratio = token.length > 5 ? 2.6 : 1.75;
+    const ratio = Math.min(3.4, Math.max(1.75, token.length * 0.23));
     const label = new THREE.Mesh(new THREE.PlaneGeometry(ratio, 0.72), material);
-    const side = index % 2 ? -1 : 1;
-    label.position.set(side * (6.4 + (index % 3) * 0.4), 2.7 - (index % 4) * 1.7, 1 - index * spacing);
+    const side = layer ? -1 : 1;
+    label.position.set(
+      side * (6.1 + (section % 3) * 0.38),
+      layer ? -2.35 + (section % 2) * 0.55 : 2.7 - (section % 3) * 0.48,
+      1 - section * spacing + (layer ? -0.7 : 0.8)
+    );
     label.rotation.y = side * -0.46;
     world.add(label);
   }
 
-  const signature = syntaxTexture('CTRL ALT DEVELOP', '#7C9AFF');
-  const signatureMaterial = new THREE.MeshBasicMaterial({
-    map: signature,
-    transparent: true,
-    opacity: 0.42,
-    depthWrite: false,
-    side: THREE.DoubleSide,
-    toneMapped: false
+  [
+    ['CTRL ALT DEVELOP', 2.4],
+    ['@CtrlAltDevelop', -spacing * 3 + 1],
+    ['FLUTTER × PYTHON', -spacing * 6 + 1]
+  ].forEach(([text, z], index) => {
+    const signature = syntaxTexture(text, '#7C9AFF');
+    const signatureMaterial = new THREE.MeshBasicMaterial({
+      map: signature,
+      transparent: true,
+      opacity: index === 0 ? 0.46 : 0.34,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+      toneMapped: false
+    });
+    const signaturePanel = new THREE.Mesh(new THREE.PlaneGeometry(4.7, 0.78), signatureMaterial);
+    signaturePanel.position.set(index % 2 ? -0.8 : 0.8, 3.15, z);
+    signaturePanel.rotation.y = index % 2 ? 0.06 : -0.06;
+    world.add(signaturePanel);
   });
-  const signaturePanel = new THREE.Mesh(new THREE.PlaneGeometry(4.4, 0.78), signatureMaterial);
-  signaturePanel.position.set(0, 3.15, -spacing * 4 + 1);
-  world.add(signaturePanel);
 }
 
 function syntaxTexture(text, color) {
@@ -840,15 +916,27 @@ function syntaxTexture(text, color) {
 }
 
 const EXHIBIT_META = [
-  ['00 / BOOT', 'main.dart'],
-  ['01 / PROFILE', 'developer.json'],
-  ['02 / ARCH', 'clean-architecture'],
-  ['03 / WORK', 'api_client.py'],
-  ['04 / PACKAGES', 'pub.dev/CtrlAltDevelop'],
-  ['05 / HISTORY', 'git log --graph'],
-  ['06 / STACK', 'flutter + python + dotnet'],
-  ['07 / RESEARCH', 'signal_pipeline.py'],
-  ['08 / CONNECT', 'contact.sh']
+  ['00 / CTRL ALT DEVELOP', '@CtrlAltDevelop · main.dart'],
+  ['01 / FLUTTER PROFILE', 'developer.json · mobile + backend'],
+  ['02 / DART ARCH', 'BLoC · Result<T> · clean architecture'],
+  ['03 / PYTHON API', '@CtrlAltDevelop · api_client.py'],
+  ['04 / DART PACKAGES', 'pub.dev/publishers/CtrlAltDevelop'],
+  ['05 / GITHUB', 'CtrlAltDevelop · git log --graph'],
+  ['06 / DEV STACK', 'Flutter + Python + .NET'],
+  ['07 / PYTHON RESEARCH', 'signal_pipeline.py · pytest'],
+  ['08 / CONNECT', 'github.com/CtrlAltDevelop']
+];
+
+const APP_FLOW_STAGES = [
+  ['01 / FLUTTER UI', '@CtrlAltDevelop · tap → Event'],
+  ['02 / BLOC STATE', 'Event → UseCase'],
+  ['03 / DOMAIN', 'Result<T> boundary'],
+  ['04 / DIO CLIENT', 'serialize + intercept'],
+  ['05 / DPOP AUTH', 'proof JWT · ES256'],
+  ['06 / REST API', 'POST /v1/orders'],
+  ['07 / PYTHON API', 'FastAPI · validate → execute'],
+  ['08 / DATABASE', 'query → commit'],
+  ['09 / UI RESPONSE', '200 OK → Ready(data)']
 ];
 
 function addExhibitLabels(world, spacing, accent) {
@@ -975,9 +1063,9 @@ function addKeycaps(world, accent, ice) {
 
 function addBuildBadges(world, spacing, accent) {
   const badges = [
-    ['BUILD', 'PASS'],
-    ['ANALYZE', '0 ISSUES'],
-    ['TESTS', '132 SUITES']
+    ['FLUTTER BUILD', 'PASS · @CtrlAltDevelop'],
+    ['PYTHON API', 'ONLINE · 200 OK'],
+    ['QUALITY', '132 SUITES · 0 ISSUES']
   ];
   badges.forEach(([title, value], index) => {
     const texture = panelTexture(title, value, '#7C9AFF');
@@ -1007,20 +1095,144 @@ function addBuildBadges(world, spacing, accent) {
   });
 }
 
-function addDataPackets(world, random, accent) {
+function addApplicationFlow(world, spacing, count, random, accent, ice, slate) {
   const packets = [];
-  const material = new THREE.MeshBasicMaterial({
+  const railY = -2.72;
+  const requestPoints = [];
+  const responsePoints = [];
+
+  for (let index = 0; index < count; index++) {
+    const z = 8 - index * spacing;
+    const bend = index % 2 ? -0.12 : 0.12;
+    requestPoints.push(new THREE.Vector3(-0.62 + bend, railY, z));
+    responsePoints.push(new THREE.Vector3(0.62 - bend, railY + 0.18, z));
+  }
+
+  requestPoints.push(new THREE.Vector3(-0.62, railY, 4 - count * spacing));
+  responsePoints.push(new THREE.Vector3(0.62, railY + 0.18, 4 - count * spacing));
+
+  const requestCurve = new THREE.CatmullRomCurve3(requestPoints, false, 'catmullrom', 0.12);
+  const responseCurve = new THREE.CatmullRomCurve3(responsePoints, false, 'catmullrom', 0.12);
+  const requestRail = lineMaterial(accent, 0.42);
+  const responseRail = lineMaterial(ice, 0.2);
+
+  world.add(new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints(requestCurve.getPoints(180)),
+    requestRail
+  ));
+  world.add(new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints(responseCurve.getPoints(180)),
+    responseRail
+  ));
+
+  APP_FLOW_STAGES.slice(0, count).forEach(([title, detail], index) => {
+    const z = 6 - index * spacing;
+    const side = index % 2 ? -1 : 1;
+    const texture = panelTexture(title, detail, '#7C9AFF');
+    const labelMaterial = new THREE.MeshBasicMaterial({
+      map: texture,
+      transparent: true,
+      opacity: 0.5,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+      toneMapped: false
+    });
+    const label = new THREE.Mesh(new THREE.PlaneGeometry(2.1, 0.5), labelMaterial);
+    label.position.set(side * 1.28, -2.1, z);
+    label.rotation.y = side * -0.08;
+    world.add(label);
+
+    const frame = new THREE.LineSegments(
+      new THREE.EdgesGeometry(new THREE.BoxGeometry(2.2, 0.6, 0.06)),
+      lineMaterial(index === 4 || index === 5 ? accent : slate, index === 4 || index === 5 ? 0.42 : 0.25)
+    );
+    frame.position.copy(label.position);
+    frame.rotation.copy(label.rotation);
+    frame.position.z -= 0.04;
+    world.add(frame);
+
+    const requestNode = new THREE.LineSegments(
+      new THREE.EdgesGeometry(new THREE.OctahedronGeometry(index === 0 || index === count - 1 ? 0.15 : 0.1, 0)),
+      requestRail
+    );
+    requestNode.position.set(-0.62, railY, z);
+    world.add(requestNode);
+
+    const responseNode = new THREE.LineSegments(
+      new THREE.EdgesGeometry(new THREE.OctahedronGeometry(0.09, 0)),
+      responseRail
+    );
+    responseNode.position.set(0.62, railY + 0.18, z);
+    world.add(responseNode);
+
+    const railX = side < 0 ? -0.62 : 0.62;
+    const labelEdge = side * 0.2;
+    world.add(new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(railX, railY + 0.09, z),
+        new THREE.Vector3(labelEdge, -2.1, z)
+      ]),
+      side < 0 ? requestRail : responseRail
+    ));
+
+    if (index < count - 1) {
+      const arrowZ = z - spacing * 0.5;
+      const requestArrow = new THREE.Mesh(
+        new THREE.ConeGeometry(0.085, 0.28, 3),
+        new THREE.MeshBasicMaterial({
+          color: accent,
+          transparent: true,
+          opacity: 0.62,
+          depthWrite: false
+        })
+      );
+      requestArrow.position.set(-0.62, railY, arrowZ);
+      requestArrow.rotation.x = -Math.PI * 0.5;
+      world.add(requestArrow);
+
+      const responseArrow = new THREE.Mesh(
+        new THREE.ConeGeometry(0.075, 0.24, 3),
+        new THREE.MeshBasicMaterial({
+          color: ice,
+          transparent: true,
+          opacity: 0.34,
+          depthWrite: false
+        })
+      );
+      responseArrow.position.set(0.62, railY + 0.18, arrowZ);
+      responseArrow.rotation.x = Math.PI * 0.5;
+      world.add(responseArrow);
+    }
+  });
+
+  const requestMaterial = new THREE.MeshBasicMaterial({
     color: accent,
     transparent: true,
-    opacity: 0.72,
+    opacity: 0.82,
     depthWrite: false
   });
-  for (let index = 0; index < 18; index++) {
-    const packet = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.32), material);
-    packet.position.x = (random() - 0.5) * 5.6;
-    packet.position.y = (random() - 0.5) * 5.2;
-    packet.userData.offset = random() * 126;
-    packet.userData.speed = 2.4 + random() * 3.8;
+  const responseMaterial = new THREE.MeshBasicMaterial({
+    color: ice,
+    transparent: true,
+    opacity: 0.58,
+    depthWrite: false
+  });
+
+  for (let index = 0; index < 22; index++) {
+    const reverse = index % 3 === 0;
+    const packet = new THREE.Mesh(
+      reverse
+        ? new THREE.OctahedronGeometry(0.095, 0)
+        : new THREE.BoxGeometry(0.08, 0.08, 0.38),
+      reverse ? responseMaterial : requestMaterial
+    );
+    packet.userData.curve = reverse ? responseCurve : requestCurve;
+    packet.userData.reverse = reverse;
+    packet.userData.offset = random();
+    packet.userData.speed = 0.022 + random() * 0.018;
+    packet.userData.phase = random() * Math.PI * 2;
+    const initial = reverse ? 1 - packet.userData.offset : packet.userData.offset;
+    packet.userData.curve.getPointAt(initial, packet.position);
     world.add(packet);
     packets.push(packet);
   }

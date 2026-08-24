@@ -88,7 +88,6 @@
   var sections = navAnchors
     .map(function (a) { return document.querySelector(a.getAttribute('href')); })
     .filter(Boolean);
-
   var ticking = false;
 
   function onScroll() {
@@ -177,7 +176,7 @@
   (function () {
     if (reduced || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
 
-    var cards = document.querySelectorAll('.card, .ap, .panel, .pkg');
+    var cards = document.querySelectorAll('.card, .ap, .panel, .pkg, .tl');
     var MAX = 5;   // degrees
 
     cards.forEach(function (card) {
