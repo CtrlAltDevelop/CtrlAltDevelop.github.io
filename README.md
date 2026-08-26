@@ -49,8 +49,11 @@ Replace `assets/Mohammad-Zarif-Resume.pdf` and update the matching content in
 
 ## Open-source packages
 
-The `#open-source` section lists the nine Dart/Flutter packages published on pub.dev,
-each mirrored at `github.com/CtrlAltDevelop/<name>`. Version numbers are hardcoded in
-`index.html` — bump them there when a package is republished. Section numbers
+The `#open-source` section lists seventeen packages: sixteen Dart/Flutter packages on
+pub.dev and `django-ninja-starter` on PyPI, each mirrored at
+`github.com/CtrlAltDevelop/<name>`. Two flagship entries (`django-ninja-starter`,
+`ohlcv_chart`) use `.pkg--flagship` and share one row with feature bullets; the rest
+use `.pkg--mini` in a three-column grid with a single-line description. Versions are not
+shown on the page, so republishing a package needs no change here. Section numbers
 (`.section__num`) are also hardcoded and run 01–08, so inserting a section means
 renumbering everything after it.
