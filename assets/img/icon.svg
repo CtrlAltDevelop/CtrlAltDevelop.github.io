@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="MZ">
+  <defs>
+    <radialGradient id="g" cx="30%" cy="22%" r="78%">
+      <stop offset="0" stop-color="#182140"/>
+      <stop offset="1" stop-color="#0B0E16"/>
+    </radialGradient>
+  </defs>
+  <rect width="32" height="32" rx="7" fill="url(#g)"/>
+  <rect x="3.5" y="3.5" width="25" height="25" rx="5.5" fill="none" stroke="#7C9AFF" stroke-opacity=".42" stroke-width=".9"/>
+  <text x="16" y="21.6" font-family="Space Grotesk, Helvetica, Arial, sans-serif" font-size="13"
+        font-weight="700" letter-spacing="-.6" fill="#7C9AFF" text-anchor="middle">MZ</text>
+</svg>
