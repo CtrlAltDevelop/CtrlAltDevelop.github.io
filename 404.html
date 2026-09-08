@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Page not found — Mohammad Zarif</title>
+
+<meta name="description" content="That page does not exist. Head back to the portfolio of Mohammad Zarif, senior Flutter and Python developer.">
+<meta name="theme-color" content="#06070A">
+<meta name="color-scheme" content="dark">
+<!-- A 404 must never be indexed, or it competes with the real page in search. -->
+<meta name="robots" content="noindex, follow">
+
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/assets/img/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/img/icon-180.png">
+
+<!-- Deliberately standalone: no WebGL, no import map, one font. A 404 should
+     cost a fraction of the home page and still look like the same site. -->
+<style>
+  @font-face {
+    font-family: 'Space Grotesk';
+    src: url('/assets/fonts/space-grotesk-var.woff2') format('woff2');
+    font-weight: 300 700; font-style: normal; font-display: swap;
+  }
+  @font-face {
+    font-family: 'JetBrains Mono';
+    src: url('/assets/fonts/jetbrains-mono-var.woff2') format('woff2');
+    font-weight: 400 700; font-style: normal; font-display: swap;
+  }
+  :root {
+    --bg: #06070A; --txt: #E9EDF5; --txt-dim: #9BA5B8; --txt-faint: #646D80;
+    --accent: #7C9AFF; --line-hi: rgba(255,255,255,.16);
+    --ease: cubic-bezier(.22,1,.36,1);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100svh; background: var(--bg); color: var(--txt);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    display: grid; place-items: center; padding: 2rem; text-align: center;
+    -webkit-font-smoothing: antialiased;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(58% 46% at 22% 30%, rgba(124,154,255,.10), transparent 70%),
+      radial-gradient(48% 42% at 80% 74%, rgba(167,139,250,.08), transparent 70%);
+  }
+  .wrap { position: relative; max-width: 34rem; }
+  .code {
+    font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+    font-size: .74rem; letter-spacing: .22em; color: var(--accent);
+    text-transform: uppercase; margin-bottom: 1rem;
+  }
+  h1 {
+    font-family: 'Space Grotesk', system-ui, sans-serif; font-weight: 700;
+    font-size: clamp(2rem, 7vw, 3.2rem); line-height: 1.1;
+    letter-spacing: -.035em; margin: 0 0 1rem;
+  }
+  p { color: var(--txt-dim); font-size: 1.02rem; line-height: 1.65; margin: 0 0 2rem; }
+  .actions { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: center; }
+  .btn {
+    display: inline-flex; align-items: center; gap: .5rem;
+    padding: .78rem 1.3rem; border-radius: 100px;
+    font-size: .9rem; font-weight: 600; text-decoration: none;
+    border: 1px solid transparent; transition: transform .25s var(--ease), background .25s, border-color .25s, color .25s;
+  }
+  .btn--primary { background: var(--accent); color: #080C18; }
+  .btn--primary:hover { transform: translateY(-2px); }
+  .btn--ghost { border-color: var(--line-hi); color: var(--txt); background: rgba(255,255,255,.025); }
+  .btn--ghost:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .meta {
+    margin-top: 2.4rem; font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+    font-size: .72rem; letter-spacing: .06em; color: var(--txt-faint);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition-duration: .001ms !important; }
+  }
+</style>
+</head>
+
+<body>
+<main class="wrap">
+  <p class="code">Error 404</p>
+  <h1>This page doesn’t exist.</h1>
+  <p>
+    The link is wrong, or the page moved. Everything on this site lives on one
+    page, so the way back is short.
+  </p>
+  <div class="actions">
+    <a class="btn btn--primary" href="/">Back to the portfolio</a>
+    <a class="btn btn--ghost" href="/#open-source">Open source</a>
+    <a class="btn btn--ghost" href="/#contact">Contact</a>
+  </div>
+  <p class="meta">Mohammad Zarif · Senior Flutter &amp; Python Developer</p>
+</main>
+</body>
+</html>

@@ -48,6 +48,40 @@
     setTimeout(function () { clearInterval(creep); finish(); }, 4000);
   })();
 
+  /* ---------- deep-link landing ----------
+     The browser jumps to #hash before the page has settled: the webfonts
+     swap and the WebGL canvas takes its final height after that first jump,
+     which grows the document under us and leaves the target roughly a
+     viewport short. Re-aim at the target once things stop moving, but bail
+     the moment the reader scrolls — their intent outranks the hash. */
+  (function () {
+    if (!window.location.hash || window.location.hash.length < 2) return;
+
+    var target;
+    try { target = document.querySelector(window.location.hash); }
+    catch (err) { return; }                    // hash isn't a valid selector
+    if (!target) return;
+
+    // The browser restores the previous scroll position after load, which
+    // lands on top of the re-aim below. With a hash to honour, the hash wins.
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
+    var hijacked = false;
+    function release() { hijacked = true; }
+    window.addEventListener('wheel', release, { passive: true, once: true });
+    window.addEventListener('touchstart', release, { passive: true, once: true });
+    window.addEventListener('keydown', release, { once: true });
+
+    function reaim() {
+      if (hijacked) return;
+      target.scrollIntoView({ behavior: 'instant', block: 'start' });
+    }
+
+    window.addEventListener('load', reaim);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(reaim);
+    setTimeout(reaim, 700);                    // after the loader hands over
+  })();
+
   /* ---------- scroll progress ---------- */
   var progressFill = document.getElementById('scroll-fill');
 
@@ -63,35 +97,63 @@
   var links = document.getElementById('nav-links');
   var toggle = document.getElementById('nav-toggle');
 
-  function closeMenu() {
-    links.classList.remove('is-open');
-    toggle.setAttribute('aria-expanded', 'false');
+  function isMenuOpen() {
+    return !!links && links.classList.contains('is-open');
   }
 
-  toggle.addEventListener('click', function () {
-    var open = links.classList.toggle('is-open');
-    toggle.setAttribute('aria-expanded', String(open));
-  });
+  /* returnFocus matters for keyboard users: dismissing with Escape has to put
+     focus back on the control that opened the menu, or focus is lost to <body>
+     and the next Tab restarts from the top of the document. */
+  function closeMenu(returnFocus) {
+    if (!links || !toggle) return;
+    links.classList.remove('is-open');
+    toggle.setAttribute('aria-expanded', 'false');
+    if (returnFocus) toggle.focus();
+  }
 
-  links.addEventListener('click', function (e) {
-    if (e.target.closest('a')) closeMenu();
-  });
+  if (toggle && links) {
+    toggle.addEventListener('click', function () {
+      var open = links.classList.toggle('is-open');
+      toggle.setAttribute('aria-expanded', String(open));
+      if (open) {
+        var first = links.querySelector('a');
+        if (first) first.focus();
+      }
+    });
 
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') closeMenu();
-  });
+    links.addEventListener('click', function (e) {
+      if (e.target.closest('a')) closeMenu(false);
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && isMenuOpen()) closeMenu(true);
+    });
+
+    // Tapping or clicking anywhere outside the open menu dismisses it.
+    document.addEventListener('pointerdown', function (e) {
+      if (!isMenuOpen()) return;
+      if (!links.contains(e.target) && !toggle.contains(e.target)) closeMenu(false);
+    }, { passive: true });
+
+    // Focus leaving the menu entirely closes it, so a Tab past the last link
+    // does not leave an open panel behind the content.
+    document.addEventListener('focusin', function (e) {
+      if (!isMenuOpen()) return;
+      if (!links.contains(e.target) && !toggle.contains(e.target)) closeMenu(false);
+    });
+  }
 
   /* ---------- scroll spy ---------- */
-  var navAnchors = Array.prototype.slice.call(
+  var navAnchors = links ? Array.prototype.slice.call(
     links.querySelectorAll('a[href^="#"]:not(.btn)')
-  );
+  ) : [];
   var sections = navAnchors
     .map(function (a) { return document.querySelector(a.getAttribute('href')); })
     .filter(Boolean);
   var ticking = false;
 
   function onScroll() {
-    nav.classList.toggle('is-stuck', window.scrollY > 24);
+    if (nav) nav.classList.toggle('is-stuck', window.scrollY > 24);
     updateProgress();
 
     // the section whose top has most recently passed the reading line
