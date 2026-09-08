@@ -31,7 +31,7 @@
 
 <link rel="canonical" href="https://ctrlaltdevelop.github.io/">
 
-<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
 <link rel="icon" href="assets/img/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/img/icon-180.png">
 <link rel="manifest" href="/site.webmanifest">
@@ -42,14 +42,16 @@
 <link rel="preload" href="assets/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/space-grotesk-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-  <link rel="stylesheet" href="assets/css/style.css?v=20260908a">
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js" crossorigin>
+  <link rel="stylesheet" href="assets/css/style.css?v=20260908b">
 <script>document.documentElement.classList.add('js');</script>
 
+<!-- Minified build: only the core module is imported (no addons), and the
+     min build is ~35% smaller over the wire than the unminified default. -->
 <script type="importmap">
 {
   "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+    "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js"
   }
 }
 </script>
@@ -64,20 +66,33 @@
       "url": "https://ctrlaltdevelop.github.io/",
       "name": "Mohammad Zarif",
       "inLanguage": "en",
-      "publisher": { "@id": "https://ctrlaltdevelop.github.io/#person" }
+      "publisher": {
+        "@id": "https://ctrlaltdevelop.github.io/#person"
+      }
     },
     {
-      "@type": ["WebPage", "ProfilePage"],
+      "@type": [
+        "WebPage",
+        "ProfilePage"
+      ],
       "@id": "https://ctrlaltdevelop.github.io/#webpage",
       "url": "https://ctrlaltdevelop.github.io/",
       "name": "Mohammad Zarif — Senior Flutter & Python Developer for Hire",
       "description": "Senior Flutter and Python developer available for freelance and contract work.",
-      "isPartOf": { "@id": "https://ctrlaltdevelop.github.io/#website" },
-      "about": { "@id": "https://ctrlaltdevelop.github.io/#person" },
-      "mainEntity": { "@id": "https://ctrlaltdevelop.github.io/#person" },
+      "isPartOf": {
+        "@id": "https://ctrlaltdevelop.github.io/#website"
+      },
+      "about": {
+        "@id": "https://ctrlaltdevelop.github.io/#person"
+      },
+      "mainEntity": {
+        "@id": "https://ctrlaltdevelop.github.io/#person"
+      },
       "inLanguage": "en",
       "dateModified": "2026-09-08",
-      "primaryImageOfPage": { "@id": "https://ctrlaltdevelop.github.io/#cover" }
+      "primaryImageOfPage": {
+        "@id": "https://ctrlaltdevelop.github.io/#cover"
+      }
     },
     {
       "@type": "ImageObject",
@@ -97,7 +112,9 @@
       "jobTitle": "Senior Flutter & Python Developer",
       "description": "Senior Flutter and Python developer with nine years developing cross-platform mobile apps and the Python and .NET backends behind them, and author of seventeen open-source packages published on pub.dev and PyPI. Available for freelance and contract work.",
       "url": "https://ctrlaltdevelop.github.io/",
-      "mainEntityOfPage": { "@id": "https://ctrlaltdevelop.github.io/#webpage" },
+      "mainEntityOfPage": {
+        "@id": "https://ctrlaltdevelop.github.io/#webpage"
+      },
       "email": "me.CtrlAltDev@proton.me",
       "hasOccupation": {
         "@type": "Occupation",
@@ -112,21 +129,281 @@
       "worksFor": {
         "@type": "Organization",
         "name": "DeltaFX Broker",
-        "address": { "@type": "PostalAddress", "addressLocality": "Mashhad", "addressCountry": "IR" }
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Mashhad",
+          "addressCountry": "IR"
+        }
       },
-      "address": { "@type": "PostalAddress", "addressLocality": "Mashhad", "addressCountry": "IR" },
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Mashhad",
+        "addressCountry": "IR"
+      },
       "alumniOf": {
         "@type": "CollegeOrUniversity",
         "name": "Khavaran Institute of Higher Education",
-        "address": { "@type": "PostalAddress", "addressLocality": "Mashhad", "addressCountry": "IR" }
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Mashhad",
+          "addressCountry": "IR"
+        }
       },
       "knowsLanguage": [
-        { "@type": "Language", "name": "Persian", "alternateName": "fa" },
-        { "@type": "Language", "name": "English", "alternateName": "en" },
-        { "@type": "Language", "name": "German", "alternateName": "de" }
+        {
+          "@type": "Language",
+          "name": "Persian",
+          "alternateName": "fa"
+        },
+        {
+          "@type": "Language",
+          "name": "English",
+          "alternateName": "en"
+        },
+        {
+          "@type": "Language",
+          "name": "German",
+          "alternateName": "de"
+        }
       ],
-      "knowsAbout": ["Flutter", "Dart", "Python", "Django", "Django Ninja", "MQL4/5", "C#", "Clean Architecture", "FinTech", "Algorithmic Trading", "Open Source", "Dart package development"],
-      "sameAs": ["https://github.com/CtrlAltDevelop"]
+      "knowsAbout": [
+        "Flutter",
+        "Dart",
+        "Python",
+        "Django",
+        "Django Ninja",
+        "MQL4/5",
+        "C#",
+        "Clean Architecture",
+        "FinTech",
+        "Algorithmic Trading",
+        "Open Source",
+        "Dart package development"
+      ],
+      "sameAs": [
+        "https://github.com/CtrlAltDevelop"
+      ]
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "https://github.com/CtrlAltDevelop/django-ninja-starter#software",
+      "name": "django-ninja-starter",
+      "url": "https://pypi.org/project/django-ninja-starter/",
+      "codeRepository": "https://github.com/CtrlAltDevelop/django-ninja-starter",
+      "programmingLanguage": "Python",
+      "license": "https://opensource.org/licenses/MIT",
+      "author": {
+        "@id": "https://ctrlaltdevelop.github.io/#person"
+      },
+      "description": "A production-oriented Django + Django Ninja starter, shipped both as a GitHub template and as an installable project generator."
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "https://github.com/CtrlAltDevelop/ohlcv_chart#software",
+      "name": "ohlcv_chart",
+      "url": "https://pub.dev/packages/ohlcv_chart",
+      "codeRepository": "https://github.com/CtrlAltDevelop/ohlcv_chart",
+      "programmingLanguage": "Dart",
+      "license": "https://opensource.org/licenses/MIT",
+      "author": {
+        "@id": "https://ctrlaltdevelop.github.io/#person"
+      },
+      "description": "A candlestick and market-depth charting engine for Flutter, drawn entirely with CustomPainter — no WebView, no JavaScript bridge."
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "https://github.com/CtrlAltDevelop/verdict#software",
+      "name": "verdict",
+      "url": "https://pub.dev/packages/verdict",
+      "codeRepository": "https://github.com/CtrlAltDevelop/verdict",
+      "programmingLanguage": "Dart",
+      "license": "https://opensource.org/licenses/MIT",
+      "author": {
+        "@id": "https://ctrlaltdevelop.github.io/#person"
+      },
+      "description": "A sealed Result<T> and a five-variant Failure hierarchy, so a switch over either is exhaustive and the error path is back in the signature."
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "https://github.com/CtrlAltDevelop/verdict_bloc#software",
+      "name": "verdict_bloc",
+      "url": "https://pub.dev/packages/verdict_bloc",
+      "codeRepository": "https://github.com/CtrlAltDevelop/verdict_bloc",
+      "programmingLanguage": "Dart",
+      "license": "https://opensource.org/licenses/MIT",
+      "author": {
+        "@id": "https://ctrlaltdevelop.github.io/#person"
+      },
+      "description": "BLoC state where transient states carry the last known good data — a failed refresh raises a toast instead of blanking the list."
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "https://github.com/CtrlAltDevelop/dpop_client#software",
+      "name": "dpop_client",
+      "url": "https://pub.dev/packages/dpop_client",
+      "codeRepository": "https://github.com/CtrlAltDevelop/dpop_client",
+      "programmingLanguage": "Dart",
+      "license": "https://opensource.org/licenses/MIT",
+      "author": {
+        "@id": "https://ctrlaltdevelop.github.io/#person"
+      },
+      "description": "DPoP proof JWTs for Dart — RFC 9449 with ES256 keys, JWK thumbprints, access-token binding and server nonces."
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "https://github.com/CtrlAltDevelop/socket_hub#software",
+      "name": "socket_hub",
+      "url": "https://pub.dev/packages/socket_hub",
+      "codeRepository": "https://github.com/CtrlAltDevelop/socket_hub",
+      "programmingLanguage": "Dart",
+      "license": "https://opensource.org/licenses/MIT",
+      "author": {
+        "@id": "https://ctrlaltdevelop.github.io/#person"
+      },
+      "description": "One WebSocket, many channels: listening subscribes, cancelling unsubscribes, and everything asked for in one microtask leaves as a single frame."
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "https://github.com/CtrlAltDevelop/safe_json_cast#software",
+      "name": "safe_json_cast",
+      "url": "https://pub.dev/packages/safe_json_cast",
+      "codeRepository": "https://github.com/CtrlAltDevelop/safe_json_cast",
+      "programmingLanguage": "Dart",
+      "license": "https://opensource.org/licenses/MIT",
+      "author": {
+        "@id": "https://ctrlaltdevelop.github.io/#person"
+      },
+      "description": "Typed casts for decoded JSON that throw a FormatException quoting the field and the value — so a bad payload fails at the parse site, not as a NaN in a chart."
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "https://github.com/CtrlAltDevelop/openapi_enum_patch#software",
+      "name": "openapi_enum_patch",
+      "url": "https://pub.dev/packages/openapi_enum_patch",
+      "codeRepository": "https://github.com/CtrlAltDevelop/openapi_enum_patch",
+      "programmingLanguage": "Dart",
+      "license": "https://opensource.org/licenses/MIT",
+      "author": {
+        "@id": "https://ctrlaltdevelop.github.io/#person"
+      },
+      "description": "A five-command CLI wrapped around swagger_parser: it shapes the export, names the integer enums OpenAPI leaves nameless — value2 becomes disabled — and audits the rest."
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "https://github.com/CtrlAltDevelop/figma_tokens_gen#software",
+      "name": "figma_tokens_gen",
+      "url": "https://pub.dev/packages/figma_tokens_gen",
+      "codeRepository": "https://github.com/CtrlAltDevelop/figma_tokens_gen",
+      "programmingLanguage": "Dart",
+      "license": "https://opensource.org/licenses/MIT",
+      "author": {
+        "@id": "https://ctrlaltdevelop.github.io/#person"
+      },
+      "description": "Turns a Figma design-token export into checked-in Dart Color constants and palette maps."
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "https://github.com/CtrlAltDevelop/toast_overlay#software",
+      "name": "toast_overlay",
+      "url": "https://pub.dev/packages/toast_overlay",
+      "codeRepository": "https://github.com/CtrlAltDevelop/toast_overlay",
+      "programmingLanguage": "Dart",
+      "license": "https://opensource.org/licenses/MIT",
+      "author": {
+        "@id": "https://ctrlaltdevelop.github.io/#person"
+      },
+      "description": "An overlay toast with an auto-dismiss countdown ring and a copyable support reference ID."
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "https://github.com/CtrlAltDevelop/queued_toast#software",
+      "name": "queued_toast",
+      "url": "https://pub.dev/packages/queued_toast",
+      "codeRepository": "https://github.com/CtrlAltDevelop/queued_toast",
+      "programmingLanguage": "Dart",
+      "license": "https://opensource.org/licenses/MIT",
+      "author": {
+        "@id": "https://ctrlaltdevelop.github.io/#person"
+      },
+      "description": "The dependency-light sibling: overlay toasts that queue per position, de-duplicate identical messages, stack up to five, and need no BuildContext at the call site."
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "https://github.com/CtrlAltDevelop/anchored_popover#software",
+      "name": "anchored_popover",
+      "url": "https://pub.dev/packages/anchored_popover",
+      "codeRepository": "https://github.com/CtrlAltDevelop/anchored_popover",
+      "programmingLanguage": "Dart",
+      "license": "https://opensource.org/licenses/MIT",
+      "author": {
+        "@id": "https://ctrlaltdevelop.github.io/#person"
+      },
+      "description": "A popover anchored to a widget rather than a screen edge."
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "https://github.com/CtrlAltDevelop/sliding_segmented_control#software",
+      "name": "sliding_segmented_control",
+      "url": "https://pub.dev/packages/sliding_segmented_control",
+      "codeRepository": "https://github.com/CtrlAltDevelop/sliding_segmented_control",
+      "programmingLanguage": "Dart",
+      "license": "https://opensource.org/licenses/MIT",
+      "author": {
+        "@id": "https://ctrlaltdevelop.github.io/#person"
+      },
+      "description": "A segmented control marked by a pill that slides between segments, plus SegmentedBody, which pairs it with a body that cross-fades as the pill moves."
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "https://github.com/CtrlAltDevelop/indicator_tab_bar#software",
+      "name": "indicator_tab_bar",
+      "url": "https://pub.dev/packages/indicator_tab_bar",
+      "codeRepository": "https://github.com/CtrlAltDevelop/indicator_tab_bar",
+      "programmingLanguage": "Dart",
+      "license": "https://opensource.org/licenses/MIT",
+      "author": {
+        "@id": "https://ctrlaltdevelop.github.io/#person"
+      },
+      "description": "A tab indicator that draws a short bar of fixed width, whatever the tab beneath it measures, plus a sliver AnimatedSwitcher."
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "https://github.com/CtrlAltDevelop/capsule_nav_bar#software",
+      "name": "capsule_nav_bar",
+      "url": "https://pub.dev/packages/capsule_nav_bar",
+      "codeRepository": "https://github.com/CtrlAltDevelop/capsule_nav_bar",
+      "programmingLanguage": "Dart",
+      "license": "https://opensource.org/licenses/MIT",
+      "author": {
+        "@id": "https://ctrlaltdevelop.github.io/#person"
+      },
+      "description": "A bottom navigation bar floating over content as a rounded capsule, its selection marked by a sliding pill."
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "https://github.com/CtrlAltDevelop/ruler_scrubber#software",
+      "name": "ruler_scrubber",
+      "url": "https://pub.dev/packages/ruler_scrubber",
+      "codeRepository": "https://github.com/CtrlAltDevelop/ruler_scrubber",
+      "programmingLanguage": "Dart",
+      "license": "https://opensource.org/licenses/MIT",
+      "author": {
+        "@id": "https://ctrlaltdevelop.github.io/#person"
+      },
+      "description": "A ruler that scrolls under a stationary needle, so a wide range stays scrubbable at a fine grain — the value moves by one tick per tick, however wide the range, and a flick coasts."
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "https://github.com/CtrlAltDevelop/diamond_percent_slider#software",
+      "name": "diamond_percent_slider",
+      "url": "https://pub.dev/packages/diamond_percent_slider",
+      "codeRepository": "https://github.com/CtrlAltDevelop/diamond_percent_slider",
+      "programmingLanguage": "Dart",
+      "license": "https://opensource.org/licenses/MIT",
+      "author": {
+        "@id": "https://ctrlaltdevelop.github.io/#person"
+      },
+      "description": "An integer slider on a diamond track with a thumb that tilts in the direction of travel — built for percentage and leverage, keeping Slider’s keyboard and semantics behavior."
     }
   ]
 }
@@ -221,7 +498,7 @@
         Download résumé
         <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M8 1v9m0 0L4.5 6.5M8 10l3.5-3.5M2 13h12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </a>
-      <a class="btn btn--ghost" href="https://github.com/CtrlAltDevelop" target="_blank" rel="noopener">GitHub</a>
+      <a class="btn btn--ghost" href="https://github.com/CtrlAltDevelop" target="_blank" rel="noopener me">GitHub</a>
     </div>
   </div>
 
@@ -999,8 +1276,8 @@
       </p>
 
       <div class="contact__actions">
-        <a class="btn btn--primary btn--lg" href="mailto:me.CtrlAltDev@proton.me">me.CtrlAltDev@proton.me</a>
-        <a class="btn btn--ghost btn--lg" href="https://github.com/CtrlAltDevelop" target="_blank" rel="noopener">github.com/CtrlAltDevelop</a>
+        <a class="btn btn--primary btn--lg" href="mailto:me.CtrlAltDev@proton.me" rel="me">me.CtrlAltDev@proton.me</a>
+        <a class="btn btn--ghost btn--lg" href="https://github.com/CtrlAltDevelop" target="_blank" rel="noopener me">github.com/CtrlAltDevelop</a>
       </div>
 
       <p class="contact__meta">Based in Mashhad, Iran &nbsp;·&nbsp; Working remotely across UAE, Germany and Turkey</p>
@@ -1017,7 +1294,7 @@
   </div>
 </footer>
 
-<script type="module" src="assets/js/gallery-scene.js?v=20260908a"></script>
-<script src="assets/js/main.js?v=20260908a" defer></script>
+<script type="module" src="assets/js/gallery-scene.js?v=20260908b"></script>
+<script src="assets/js/main.js?v=20260908b" defer></script>
 </body>
 </html>

@@ -49,7 +49,7 @@
 
   --txt:           #E9EDF5;
   --txt-dim:       #9BA5B8;
-  --txt-faint:     #646D80;
+  --txt-faint:     #737C90;   /* AA-contrast (4.5:1+) against --bg at normal text sizes */
 
   --accent:        #7C9AFF;
   --accent-soft:   124, 154, 255;   /* rgb triplet for alpha use */
