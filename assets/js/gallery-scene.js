@@ -29,10 +29,15 @@ function boot(target) {
   const accent = 0x7c9aff;
   const ice = 0xe9edf5;
   const slate = 0x646d80;
-  const sectionIds = [
-    'hero', 'about', 'approach', 'work', 'open-source',
-    'experience', 'stack', 'research', 'contact'
-  ];
+  // Derived from the DOM, never hardcoded. An earlier hardcoded order silently
+  // went stale when the page reordered its sections, which parked the camera on
+  // one exhibit across three sections and left two exhibits unreachable. Reading
+  // the order back from the document means the scene cannot drift from the page
+  // again — reorder a <section> and the gallery follows.
+  const sectionIds = SECTION_ORDER
+    .filter((id) => document.getElementById(id))
+    .sort((a, b) => document.getElementById(a).offsetTop - document.getElementById(b).offsetTop);
+  if (!sectionIds.length) return;
   const spacing = 13;
   const scene = new THREE.Scene();
   scene.fog = new THREE.FogExp2(0x06070a, 0.023);
@@ -69,7 +74,7 @@ function boot(target) {
   addCeiling(world, ice, accent);
   addPortalTunnel(world, spacing, sectionIds.length, ice, accent);
   addSyntaxCloud(world, spacing, sectionIds.length, accent, ice);
-  addExhibitLabels(world, spacing, accent);
+  addExhibitLabels(world, spacing, accent, sectionIds);
   addCircuitWalls(world, spacing, sectionIds.length, ice, accent);
   addKeycaps(world, accent, ice);
   addBuildBadges(world, spacing, accent);
@@ -79,7 +84,7 @@ function boot(target) {
 
   for (let i = 0; i < sectionIds.length; i++) {
     const side = i === 0 ? 1 : (i % 2 ? -1 : 1);
-    const exhibit = createExhibit(i, side, accent, ice, slate, seeded);
+    const exhibit = createExhibit(i, EXHIBITS[sectionIds[i]].screen, side, accent, ice, slate, seeded);
     const baseY = (i % 3 - 1) * 0.45;
     exhibit.position.set(side * (i === 0 ? 3.8 : 4.6), baseY, 4 - i * spacing);
     exhibit.userData.baseY = baseY;
@@ -225,7 +230,7 @@ function boot(target) {
   else raf = requestAnimationFrame(animate);
 }
 
-function createExhibit(index, side, accent, ice, slate, random) {
+function createExhibit(index, screenIndex, side, accent, ice, slate, random) {
   const group = new THREE.Group();
   group.userData.materials = [];
   group.userData.floatY = 0;
@@ -250,7 +255,7 @@ function createExhibit(index, side, accent, ice, slate, random) {
   inner.rotation.z = index % 2 ? 0.09 : -0.09;
   group.add(inner);
 
-  const signature = makeSignature(index, accentMaterial, frameMaterial);
+  const signature = makeSignature(index, screenIndex, accentMaterial, frameMaterial);
   signature.position.z = 1.4;
   signature.scale.setScalar(index === 0 ? 1.16 : 1);
   group.add(signature);
@@ -277,12 +282,12 @@ function createExhibit(index, side, accent, ice, slate, random) {
   return group;
 }
 
-function makeSignature(index, accentMaterial, iceMaterial) {
+function makeSignature(index, screenIndex, accentMaterial, iceMaterial) {
   const group = new THREE.Group();
   group.userData.materials = [];
   group.userData.scanners = [];
 
-  const screen = makeCodeScreen(index, accentMaterial, iceMaterial);
+  const screen = makeCodeScreen(screenIndex, accentMaterial, iceMaterial);
   screen.position.set(index % 2 ? 0.38 : -0.38, 0.12, 0.48);
   screen.rotation.y = index % 2 ? -0.09 : 0.09;
   group.add(screen);
@@ -915,17 +920,25 @@ function syntaxTexture(text, color) {
   return texture;
 }
 
-const EXHIBIT_META = [
-  ['00 / CTRL ALT DEVELOP', '@CtrlAltDevelop · main.dart'],
-  ['01 / FLUTTER PROFILE', 'developer.json · mobile + backend'],
-  ['02 / DART ARCH', 'BLoC · Result<T> · clean architecture'],
-  ['03 / PYTHON API', '@CtrlAltDevelop · api_client.py'],
-  ['04 / DART PACKAGES', 'pub.dev/publishers/CtrlAltDevelop'],
-  ['05 / GITHUB', 'CtrlAltDevelop · git log --graph'],
-  ['06 / DEV STACK', 'Flutter + Python + .NET'],
-  ['07 / PYTHON RESEARCH', 'signal_pipeline.py · pytest'],
-  ['08 / CONNECT', 'github.com/CtrlAltDevelop']
-];
+/* Exhibit content, keyed by the section it belongs to rather than by position.
+   The plate number is composed from the section's real position in the document
+   (see addExhibitLabels), so reordering a section renumbers the gallery instead
+   of handing one section another's exhibit. `screen` indexes PROGRAM_SCREENS. */
+const EXHIBITS = {
+  'hero':        { title: 'CTRL ALT DEVELOP', meta: '@CtrlAltDevelop · main.dart',            screen: 0 },
+  'about':       { title: 'FLUTTER PROFILE',  meta: 'developer.json · mobile + backend',      screen: 1 },
+  'approach':    { title: 'DART ARCH',        meta: 'BLoC · Result<T> · clean architecture',  screen: 2 },
+  'work':        { title: 'PYTHON API',       meta: '@CtrlAltDevelop · api_client.py',        screen: 3 },
+  'open-source': { title: 'DART PACKAGES',    meta: 'pub.dev · 17 published packages',        screen: 4 },
+  'experience':  { title: 'GITHUB',           meta: 'CtrlAltDevelop · git log --graph',       screen: 5 },
+  'stack':       { title: 'DEV STACK',        meta: 'Flutter + Python + .NET',                screen: 6 },
+  'research':    { title: 'PYTHON RESEARCH',  meta: 'signal_pipeline.py · pytest',            screen: 7 },
+  'contact':     { title: 'CONNECT',          meta: 'github.com/CtrlAltDevelop',              screen: 8 }
+};
+
+/* Every section the scene has an exhibit for. boot() intersects this with the
+   document and sorts by real offsetTop, so this list is a registry, not an order. */
+const SECTION_ORDER = Object.keys(EXHIBITS);
 
 const APP_FLOW_STAGES = [
   ['01 / FLUTTER UI', '@CtrlAltDevelop · tap → Event'],
@@ -939,8 +952,11 @@ const APP_FLOW_STAGES = [
   ['09 / UI RESPONSE', '200 OK → Ready(data)']
 ];
 
-function addExhibitLabels(world, spacing, accent) {
-  EXHIBIT_META.forEach(([title, meta], index) => {
+function addExhibitLabels(world, spacing, accent, sectionIds) {
+  sectionIds.forEach((id, index) => {
+    const exhibit = EXHIBITS[id];
+    const title = String(index).padStart(2, '0') + ' / ' + exhibit.title;
+    const meta = exhibit.meta;
     const texture = panelTexture(title, meta, '#7C9AFF');
     const material = new THREE.MeshBasicMaterial({
       map: texture,
