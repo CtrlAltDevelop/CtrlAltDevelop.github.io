@@ -85,6 +85,9 @@ html {
   scroll-snap-type: y mandatory;
   scroll-padding-top: 4.5rem;
   -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+  width: 100%;
+  background: var(--bg);
 }
 
 body {
@@ -341,7 +344,7 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
 }
 .facts__inner {
   max-width: var(--wrap); margin-inline: auto; padding: 1.15rem var(--pad);
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.5rem;
 }
 /* Keep the four metrics light: no blur or moving translucent layer over the
    WebGL scene, just quiet dividers that stay stable while scrolling. */
@@ -379,7 +382,7 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
 .about__lead p:last-child { margin-bottom: 0; }
 
 .stats {
-  display: grid; grid-template-columns: repeat(2, 1fr); column-gap: 1.5rem;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 1.5rem;
   background: transparent; border: 0; border-radius: 0; overflow: visible;
   counter-reset: profile-stat;
 }
@@ -824,7 +827,7 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
   .cards  { grid-template-columns: 1fr; }
   .pkgs   { grid-template-columns: 1fr; }
   .pkgs--mini { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .pkg-facts { grid-template-columns: repeat(2, 1fr); }
+  .pkg-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .research { grid-template-columns: 1fr; }
   .tl { grid-template-columns: 1fr; gap: .5rem; }
 }
@@ -856,7 +859,7 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
   .nav__links > a:not(.btn) { padding: .85rem 0; border-bottom: 1px solid var(--line); font-size: 1rem; }
   .nav__links > a:not(.btn)::after { display: none; }
   .nav__cta { margin-top: 1.1rem; justify-content: center; }
-  .stats { grid-template-columns: 1fr 1fr; }
+  .stats { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .pkg-group { font-size: .68rem; letter-spacing: .12em; gap: .75rem; }
   .approach { grid-template-columns: 1fr; }
 
@@ -880,7 +883,7 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
   .hero__actions .btn--primary { flex: 1 1 100%; }
 
   .facts { margin-top: 2rem; }
-  .facts__inner { grid-template-columns: 1fr 1fr; gap: .85rem 1.25rem; padding-block: .95rem; }
+  .facts__inner { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: .85rem 1.25rem; padding-block: .95rem; }
   .facts li:nth-child(odd) { border-left: 0; }
   .facts li:nth-child(n+3) { border-top: 1px solid var(--line); padding-top: 1rem; }
   .facts b { font-size: 1rem; }
