@@ -529,6 +529,43 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
 }
 .pkg__desc { color: var(--txt-dim); font-size: .92rem; line-height: 1.62; }
 
+/* live release pill — filled in by live-meta.js once the registry answers, so
+   it is absent (not empty) whenever the lookup does not happen. */
+.pkg__ver {
+  flex: none; align-self: baseline; text-align: right;
+  font-family: var(--font-mono); font-size: .68rem; font-weight: 600;
+  letter-spacing: .02em; color: var(--accent);
+  padding: .2rem .5rem; border-radius: 999px;
+  border: 1px solid rgba(124, 154, 255, .28); background: rgba(124, 154, 255, .08);
+  animation: pkg-ver-in .45s var(--ease) both;
+}
+.pkg__ver i {
+  display: block; font-style: normal; font-size: .6rem; font-weight: 500;
+  letter-spacing: .04em; color: var(--txt-faint); margin-top: .12rem;
+}
+@keyframes pkg-ver-in { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; } }
+
+/* while the registry is being asked: same pill, no text, a light sweeping over
+   it. Sized to a typical "v1.2.3" + date so the answer lands without a jump. */
+.pkg__ver--loading {
+  width: 5.1rem; height: 2.05rem; padding: 0;
+  border-color: var(--line-hi); background: rgba(255, 255, 255, .035);
+  position: relative; overflow: hidden; animation: none;
+}
+.pkg__ver--loading::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(100deg,
+    transparent 20%, rgba(255, 255, 255, .11) 50%, transparent 80%);
+  transform: translateX(-100%);
+  animation: pkg-shimmer 1.35s var(--ease) infinite;
+}
+@keyframes pkg-shimmer { to { transform: translateX(100%); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .pkg__ver { animation: none; }
+  .pkg__ver--loading::after { animation: none; opacity: .5; transform: none; }
+}
+
 .pkg__list { display: grid; gap: .5rem; margin: .85rem 0 1.15rem; }
 .pkg__list li {
   position: relative; padding-left: 1.05rem;

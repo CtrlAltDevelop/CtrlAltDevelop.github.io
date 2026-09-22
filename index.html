@@ -593,18 +593,17 @@
           <h4 class="pkg__name">django-ninja-starter</h4>
         </div>
         <p class="pkg__desc">
-          A production-oriented Django&nbsp;+&nbsp;Django Ninja starter, shipped both as a GitHub
-          template and as an installable project generator. Authentication, OAuth token storage,
-          versioned APIs, typing, tests and CI are already wired together — the parts every
-          backend rebuilds from scratch, built once and made opt-in.
+          A production-oriented Django&nbsp;+&nbsp;Django Ninja API template and project generator:
+          authentication, OAuth token storage, versioned APIs, typing, tests and CI wired together
+          from the first commit.
         </p>
         <ul class="pkg__list">
-          <li>Four login methods — password, emailed code, SMS code, magic link — and four second factors (TOTP, SMS, email, recovery codes), each a separate app that installs nothing until you name it.</li>
-          <li>Three OAuth token modes selected by one environment variable: sliding expiry, server-side device sessions, or refresh rotation with family-wide revocation on reuse.</li>
-          <li>Social sign-in for Google, Apple and Microsoft; every login ends by minting a signed JWT, and secrets are persisted only as hashes.</li>
-          <li>Environment-split settings, secure production defaults, health checks, Swagger docs, coverage, linting and CI in the generated project from the first commit.</li>
+          <li>Password, emailed-code, SMS and magic-link logins, with TOTP, SMS, email and recovery-code second factors — each a separate app that installs nothing until you name it.</li>
+          <li>OAuth token strategy chosen by one environment variable: sliding expiry, server-side device sessions, or refresh rotation with family-wide revocation on reuse.</li>
+          <li>Social sign-in for Google, Apple and Microsoft; every login mints a signed JWT, and secrets are persisted only as hashes.</li>
+          <li>Environment-split settings, secure production defaults, health checks, Swagger docs, coverage and linting in the generated project.</li>
         </ul>
-        <ul class="tags"><li>Python</li><li>Django 5.2 / 6.x</li><li>Django Ninja</li><li>OAuth 2.0</li><li>OpenAPI</li></ul>
+        <ul class="tags"><li>Python</li><li>Django 5 / 6</li><li>Django Ninja</li><li>OAuth 2.0</li><li>OpenAPI</li></ul>
         <div class="pkg__links">
           <a class="pkg__link" href="https://pypi.org/project/django-ninja-starter/" target="_blank" rel="noopener">PyPI</a>
           <a class="pkg__link pkg__link--quiet" href="https://github.com/CtrlAltDevelop/django-ninja-starter" target="_blank" rel="noopener">GitHub</a>
@@ -619,14 +618,13 @@
         <p class="pkg__desc">
           A candlestick and market-depth charting engine for Flutter, drawn entirely with
           <code>CustomPainter</code> — no WebView, no JavaScript bridge. The whole trading-terminal
-          surface, written once instead of per app, and updated weekly.
+          surface, written once instead of per app.
         </p>
         <ul class="pkg__list">
-          <li>Eight chart types — candles, OHLC bars, line, step, area, HLC area, baseline, columns — plus Heikin-Ashi, Renko, Kagi, point &amp; figure and range-bar transforms.</li>
-          <li>31 indicators, each a configured instance rather than a flag, across main-chart overlays (MA, Bollinger, SAR, VWAP, Ichimoku, Supertrend) and draggable, reorderable sub-chart panes.</li>
-          <li>29 drawing tools — trend lines, channels, pitchforks, Gann fans, four Fibonacci tools, XABCD patterns, planned positions with risk-to-reward — with multi-select, exact-coordinate editing and undo/redo.</li>
-          <li>Bar replay, linked charts sharing one crosshair, higher-timeframe indicators that never repaint, and price and indicator alerts.</li>
-          <li>A separate order-book <code>DepthChart</code>, linear/log/percentage/indexed price axes, a draggable price scale, and layouts that serialize to JSON.</li>
+          <li>Candles, OHLC bars, line, step, area, baseline and columns, plus Heikin-Ashi, Renko, Kagi, point &amp; figure and range-bar transforms.</li>
+          <li>A full indicator set — MA, Bollinger, SAR, VWAP, Ichimoku, Supertrend and the rest — each a configured instance rather than a flag, across overlays and draggable, reorderable sub-chart panes.</li>
+          <li>Drawing tools from trend lines and channels to pitchforks, Gann fans, Fibonacci sets and XABCD patterns, with multi-select, exact-coordinate editing and undo/redo.</li>
+          <li>Bar replay, linked crosshairs, non-repainting higher-timeframe indicators, a separate order-book <code>DepthChart</code>, and layouts that serialize to JSON.</li>
         </ul>
         <ul class="tags"><li>Flutter</li><li>CustomPainter</li><li>Market data</li><li>Technical analysis</li><li>Drawing tools</li></ul>
         <div class="pkg__links">
@@ -1299,5 +1297,6 @@
 
 <script type="module" src="assets/js/gallery-scene.js?v=20260908b"></script>
 <script src="assets/js/main.js?v=20260908b" defer></script>
+<script src="assets/js/live-meta.js?v=20260922b" defer></script>
 </body>
 </html>
