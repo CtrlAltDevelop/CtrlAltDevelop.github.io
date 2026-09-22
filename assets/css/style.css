@@ -475,7 +475,7 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
    Same glass surface as .card, but a denser grid: nine of these on one screen,
    so the title carries the weight and the prose stays small. */
 .pkg-facts {
-  display: grid; grid-template-columns: repeat(4, 1fr);
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
   gap: 1px; background: var(--line);
   border: 1px solid var(--line); border-radius: var(--radius);
   overflow: hidden; margin-bottom: clamp(2rem, 4vw, 3rem);

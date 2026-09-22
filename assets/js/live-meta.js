@@ -8,6 +8,9 @@
    that ships in pubspec.yaml / the PyPI summary, so editing it at the source
    updates this page on the next visit.
 
+   The GitHub side is one request for the whole account, not one per card, so
+   the repository topics become the tag row and cost a single call.
+
    Everything here is additive. The hand-written copy in the HTML is what a
    visitor sees with no JavaScript, an offline cache or a registry outage; a
    failed lookup simply leaves that copy in place.
@@ -15,7 +18,7 @@
 (function () {
   'use strict';
 
-  var CACHE_KEY = 'pkg-meta-v1';
+  var CACHE_KEY = 'pkg-meta-v2';
   var CACHE_TTL = 6 * 60 * 60 * 1000;          // 6h — a release is not urgent news
 
   var REGISTRIES = {
@@ -122,6 +125,135 @@
     card.classList.add('pkg--live');
   }
 
+  /* ---------- github topics ---------- */
+
+  // GitHub topics are lowercase slugs. Title-casing alone would print
+  // "Custompainter" and "Github Actions", so the names that have a real spelling
+  // are listed; everything else is de-hyphenated and capitalised.
+  var TOPIC_NAMES = {
+    'custompainter': 'CustomPainter', 'github-actions': 'GitHub Actions',
+    'ohlcv': 'OHLCV', 'api': 'API', 'apis': 'APIs', 'cli': 'CLI', 'ci': 'CI',
+    'ui': 'UI', 'ux': 'UX', 'rtl': 'RTL', 'a11y': 'a11y', 'json': 'JSON',
+    'jwt': 'JWT', 'oauth2': 'OAuth 2.0', 'oauth': 'OAuth', 'dpop': 'DPoP',
+    'rfc9449': 'RFC 9449', 'totp': 'TOTP', 'sms': 'SMS', 'http': 'HTTP',
+    'websocket': 'WebSocket', 'websockets': 'WebSockets', 'sdk': 'SDK',
+    'openapi': 'OpenAPI', 'swagger': 'Swagger', 'bloc': 'BLoC',
+    'ios': 'iOS', 'macos': 'macOS', 'devops': 'DevOps', 'mvvm': 'MVVM',
+    'django': 'Django', 'django-ninja': 'Django Ninja', 'pypi': 'PyPI',
+    '2fa': '2FA', 'mfa': 'MFA', 'sso': 'SSO', 'crud': 'CRUD', 'dtcg': 'DTCG',
+    'rest': 'REST', 'rest-api': 'REST API', 'pubsub': 'Pub/Sub',
+    'tabbar': 'Tab Bar', 'tabs': 'Tabs', 'graphql': 'GraphQL', 'grpc': 'gRPC'
+  };
+
+  var MAX_TOPICS = 7;      // the tag row is one or two lines by design
+
+  // GitHub hands topics back alphabetically, which buries the interesting ones:
+  // ohlcv_chart would show "charts, dart, finance" and drop "trading" and
+  // "technical-indicators" at the cut. So the platform leads, as the eye expects
+  // on a package card, and the rest follow most-specific first.
+  var TOPIC_LEAD = ['flutter', 'dart', 'python', 'django'];
+
+  function rankTopics(topics) {
+    var lead = [], rest = [];
+    topics.forEach(function (t) {
+      (TOPIC_LEAD.indexOf(t) > -1 ? lead : rest).push(t);
+    });
+
+    lead.sort(function (a, b) { return TOPIC_LEAD.indexOf(a) - TOPIC_LEAD.indexOf(b); });
+    rest.sort(function (a, b) { return b.length - a.length; });
+
+    return lead.concat(rest);
+  }
+
+  function topicLabel(slug) {
+    if (TOPIC_NAMES[slug]) return TOPIC_NAMES[slug];
+    return slug.split('-').map(function (word) {
+      return TOPIC_NAMES[word] || word.charAt(0).toUpperCase() + word.slice(1);
+    }).join(' ');
+  }
+
+  function paintTopics(card, topics) {
+    if (!topics || !topics.length) return;
+
+    var list = card.querySelector('.tags');
+    if (!list) return;
+
+    var frag = document.createDocumentFragment();
+    rankTopics(topics).slice(0, MAX_TOPICS).forEach(function (slug) {
+      var li = document.createElement('li');
+      li.textContent = topicLabel(slug);
+      frag.appendChild(li);
+    });
+
+    list.textContent = '';
+    list.appendChild(frag);
+    card.classList.add('pkg--topics');
+  }
+
+  // One call covers every card: the account's repositories carry their own
+  // description and topics, so nothing here scales with the number of packages.
+  function loadTopics(cards) {
+    var owner = null;
+    var byRepo = {};
+
+    cards.forEach(function (card) {
+      var links = card.querySelectorAll('a[href]');
+      for (var i = 0; i < links.length; i++) {
+        var hit = /github\.com\/([^\/]+)\/([^\/?#]+)/i.exec(links[i].getAttribute('href'));
+        if (!hit) continue;
+        owner = owner || hit[1];
+        byRepo[hit[2].toLowerCase()] = card;
+        break;
+      }
+    });
+
+    if (!owner) return;
+
+    // Forks and archived repositories are somebody else's work or finished work,
+    // so the headline figure counts neither.
+    function countRepos(repos) {
+      var live = repos.filter(function (repo) { return !repo.fork && !repo.archived; });
+      var cell = document.querySelector('.pkg-facts [data-live="repos"]');
+      if (!cell || !live.length) return;
+
+      cell.dataset.to = live.length;
+      var shown = cell.textContent.trim();
+      if (shown && shown !== '0') cell.textContent = live.length;   // already counted up
+    }
+
+    function apply(repos) {
+      repos.forEach(function (repo) {
+        var card = byRepo[String(repo.name).toLowerCase()];
+        if (card) paintTopics(card, repo.topics);
+      });
+      countRepos(repos);
+    }
+
+    if (cache.__repos) { apply(cache.__repos); return; }
+
+    // Unauthenticated GitHub allows 60 calls an hour per address; this is one of
+    // them per session, and a refusal just leaves the hand-written tags alone.
+    fetch('https://api.github.com/users/' + owner + '/repos?per_page=100', {
+      headers: { Accept: 'application/vnd.github+json' }
+    })
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+      .then(function (list) {
+        if (!Array.isArray(list)) return;
+        var slim = list.map(function (repo) {
+          return {
+            name: repo.name,
+            topics: repo.topics || [],
+            fork: !!repo.fork,
+            archived: !!repo.archived
+          };
+        });
+        cache.__repos = slim;
+        cacheWrite(cache);
+        apply(slim);
+      })
+      .catch(function () { /* rate-limited or offline — the curated tags stand */ });
+  }
+
   /* ---------- lookup ---------- */
 
   function lookup(card, reg, name) {
@@ -184,6 +316,8 @@
       if (shown && shown !== '0') facts[i].textContent = values[i];   // already counted up
     }
   })();
+
+  loadTopics(cards);
 
   // Anything already in this session's cache costs nothing to show, so paint it
   // up front instead of making it wait for the card to scroll into view again.
