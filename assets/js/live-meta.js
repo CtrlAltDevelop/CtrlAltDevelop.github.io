@@ -1,25 +1,39 @@
 /* ─────────────────────────────────────────────────────────────────────────────
-   live-meta.js — keeps the open-source section honest.
+   live-meta.js — GitHub is the source of truth for the open-source section.
 
-   Every package card already links to its registry, so the package name is read
-   straight off that link: no extra markup to keep in sync. On first scroll into
-   view the card asks pub.dev or PyPI for the current release and swaps in the
-   live version, publish date and one-line description — the same description
-   that ships in pubspec.yaml / the PyPI summary, so editing it at the source
-   updates this page on the next visit.
+   The rule this implements: every public repository that is neither a fork nor
+   archived counts towards the repository tally, and every one of those that has
+   a published release gets a card. Publish a release and the package appears
+   here; archive a repository and its card goes away. Nothing to edit twice.
 
-   The GitHub side is one request for the whole account, not one per card, so
-   the repository topics become the tag row and cost a single call.
+   The cards already in index.html are the baseline: they are what Google indexes
+   and what a visitor without JavaScript reads, and they cover the packages that
+   exist today. This file reconciles that baseline with GitHub — filling in live
+   versions, descriptions and topics, adding cards for repositories released
+   since, and dropping cards whose repository no longer qualifies.
 
-   Everything here is additive. The hand-written copy in the HTML is what a
-   visitor sees with no JavaScript, an offline cache or a registry outage; a
-   failed lookup simply leaves that copy in place.
+   Request budget matters, because unauthenticated GitHub allows 60 calls an hour
+   per address. So: one call lists the account, and only repositories that do not
+   already have a card are asked whether they have a release. That index is kept
+   in localStorage for a day. Version numbers for the packages that do have cards
+   come from pub.dev and PyPI instead, which are not rate-limited, and are
+   fetched lazily as each card scrolls into view.
+
+   Every step is additive and every failure is silent: rate-limited, offline or
+   blocked, the page keeps exactly what the HTML already said.
    ───────────────────────────────────────────────────────────────────────────── */
 (function () {
   'use strict';
 
-  var CACHE_KEY = 'pkg-meta-v2';
-  var CACHE_TTL = 6 * 60 * 60 * 1000;          // 6h — a release is not urgent news
+  var PKG_CACHE = 'pkg-meta-v2';          // sessionStorage: registry lookups
+  var PKG_TTL = 6 * 60 * 60 * 1000;
+
+  var GH_CACHE = 'gh-index-v1';           // localStorage: the account index
+  var GH_TTL = 24 * 60 * 60 * 1000;
+
+  var MAX_TOPICS = 7;                     // the tag row is one or two lines by design
+
+  /* ---------- registries ---------- */
 
   var REGISTRIES = {
     pub: {
@@ -48,84 +62,26 @@
     }
   };
 
-  /* ---------- session cache ---------- */
+  /* ---------- caches ---------- */
 
-  function cacheRead() {
+  function readCache(store, key, ttl) {
     try {
-      var raw = sessionStorage.getItem(CACHE_KEY);
-      if (!raw) return {};
+      var raw = window[store].getItem(key);
+      if (!raw) return null;
       var box = JSON.parse(raw);
-      return (Date.now() - box.at < CACHE_TTL) ? box.data : {};
-    } catch (e) { return {}; }
+      return (Date.now() - box.at < ttl) ? box.data : null;
+    } catch (e) { return null; }
   }
 
-  function cacheWrite(data) {
+  function writeCache(store, key, data) {
     try {
-      sessionStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), data: data }));
+      window[store].setItem(key, JSON.stringify({ at: Date.now(), data: data }));
     } catch (e) { /* private mode, quota, blocked storage — the page works without it */ }
   }
 
-  var cache = cacheRead();
+  var pkgCache = readCache('sessionStorage', PKG_CACHE, PKG_TTL) || {};
 
-  /* ---------- rendering ---------- */
-
-  function formatDate(iso) {
-    var d = new Date(iso);
-    if (isNaN(d)) return null;
-    try {
-      return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-    } catch (e) { return String(iso).slice(0, 10); }
-  }
-
-  // A pill-shaped placeholder that shimmers while the registry is being asked.
-  // It carries no text, so a screen reader is not told about a pending fetch.
-  function skeleton(card) {
-    var top = card.querySelector('.pkg__top');
-    if (!top || top.querySelector('.pkg__ver')) return;
-
-    var badge = document.createElement('span');
-    badge.className = 'pkg__ver pkg__ver--loading';
-    badge.setAttribute('aria-hidden', 'true');
-    top.appendChild(badge);
-  }
-
-  function clearSkeleton(card) {
-    var badge = card.querySelector('.pkg__ver--loading');
-    if (badge) badge.parentNode.removeChild(badge);
-  }
-
-  function paint(card, meta) {
-    if (!meta || !meta.version) return;
-
-    // Live one-liner from the package itself, when the registry has one.
-    var desc = card.querySelector('.pkg__desc');
-    if (desc && meta.desc && meta.desc.length > 20) {
-      desc.textContent = meta.desc;
-    }
-
-    var top = card.querySelector('.pkg__top');
-    if (!top) return;
-
-    var badge = top.querySelector('.pkg__ver');
-    if (!badge) {
-      badge = document.createElement('span');
-      top.appendChild(badge);
-    }
-    badge.className = 'pkg__ver';
-    badge.removeAttribute('aria-hidden');
-
-    var when = meta.published && formatDate(meta.published);
-    badge.textContent = 'v' + meta.version;
-    badge.title = when ? 'Latest release, published ' + when : 'Latest release';
-    if (when) {
-      var sub = document.createElement('i');
-      sub.textContent = when;
-      badge.appendChild(sub);
-    }
-    card.classList.add('pkg--live');
-  }
-
-  /* ---------- github topics ---------- */
+  /* ---------- topic naming ---------- */
 
   // GitHub topics are lowercase slugs. Title-casing alone would print
   // "Custompainter" and "Github Actions", so the names that have a real spelling
@@ -145,31 +101,84 @@
     'tabbar': 'Tab Bar', 'tabs': 'Tabs', 'graphql': 'GraphQL', 'grpc': 'gRPC'
   };
 
-  var MAX_TOPICS = 7;      // the tag row is one or two lines by design
-
   // GitHub hands topics back alphabetically, which buries the interesting ones:
   // ohlcv_chart would show "charts, dart, finance" and drop "trading" and
   // "technical-indicators" at the cut. So the platform leads, as the eye expects
   // on a package card, and the rest follow most-specific first.
   var TOPIC_LEAD = ['flutter', 'dart', 'python', 'django'];
 
-  function rankTopics(topics) {
-    var lead = [], rest = [];
-    topics.forEach(function (t) {
-      (TOPIC_LEAD.indexOf(t) > -1 ? lead : rest).push(t);
-    });
-
-    lead.sort(function (a, b) { return TOPIC_LEAD.indexOf(a) - TOPIC_LEAD.indexOf(b); });
-    rest.sort(function (a, b) { return b.length - a.length; });
-
-    return lead.concat(rest);
-  }
-
   function topicLabel(slug) {
     if (TOPIC_NAMES[slug]) return TOPIC_NAMES[slug];
     return slug.split('-').map(function (word) {
       return TOPIC_NAMES[word] || word.charAt(0).toUpperCase() + word.slice(1);
     }).join(' ');
+  }
+
+  function rankTopics(topics) {
+    var lead = [], rest = [];
+    topics.forEach(function (t) {
+      (TOPIC_LEAD.indexOf(t) > -1 ? lead : rest).push(t);
+    });
+    lead.sort(function (a, b) { return TOPIC_LEAD.indexOf(a) - TOPIC_LEAD.indexOf(b); });
+    rest.sort(function (a, b) { return b.length - a.length; });
+    return lead.concat(rest);
+  }
+
+  /* ---------- painting ---------- */
+
+  function formatDate(iso) {
+    var d = new Date(iso);
+    if (isNaN(d)) return null;
+    try {
+      return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    } catch (e) { return String(iso).slice(0, 10); }
+  }
+
+  // A pill-shaped placeholder that shimmers while a lookup is in flight. It
+  // carries no text, so a screen reader is not told about a pending fetch.
+  function skeleton(card) {
+    var top = card.querySelector('.pkg__top');
+    if (!top || top.querySelector('.pkg__ver')) return;
+
+    var badge = document.createElement('span');
+    badge.className = 'pkg__ver pkg__ver--loading';
+    badge.setAttribute('aria-hidden', 'true');
+    top.appendChild(badge);
+  }
+
+  function clearSkeleton(card) {
+    var badge = card.querySelector('.pkg__ver--loading');
+    if (badge) badge.parentNode.removeChild(badge);
+  }
+
+  function paintVersion(card, version, published) {
+    if (!version) return;
+
+    var top = card.querySelector('.pkg__top');
+    if (!top) return;
+
+    var badge = top.querySelector('.pkg__ver');
+    if (!badge) {
+      badge = document.createElement('span');
+      top.appendChild(badge);
+    }
+    badge.className = 'pkg__ver';
+    badge.removeAttribute('aria-hidden');
+
+    var when = published && formatDate(published);
+    badge.textContent = String(version).charAt(0) === 'v' ? version : 'v' + version;
+    badge.title = when ? 'Latest release, published ' + when : 'Latest release';
+    if (when) {
+      var sub = document.createElement('i');
+      sub.textContent = when;
+      badge.appendChild(sub);
+    }
+    card.classList.add('pkg--live');
+  }
+
+  function paintDesc(card, text) {
+    var desc = card.querySelector('.pkg__desc');
+    if (desc && text && text.length > 20) desc.textContent = text;
   }
 
   function paintTopics(card, topics) {
@@ -190,74 +199,17 @@
     card.classList.add('pkg--topics');
   }
 
-  // One call covers every card: the account's repositories carry their own
-  // description and topics, so nothing here scales with the number of packages.
-  function loadTopics(cards) {
-    var owner = null;
-    var byRepo = {};
-
-    cards.forEach(function (card) {
-      var links = card.querySelectorAll('a[href]');
-      for (var i = 0; i < links.length; i++) {
-        var hit = /github\.com\/([^\/]+)\/([^\/?#]+)/i.exec(links[i].getAttribute('href'));
-        if (!hit) continue;
-        owner = owner || hit[1];
-        byRepo[hit[2].toLowerCase()] = card;
-        break;
-      }
-    });
-
-    if (!owner) return;
-
-    // Forks and archived repositories are somebody else's work or finished work,
-    // so the headline figure counts neither.
-    function countRepos(repos) {
-      var live = repos.filter(function (repo) { return !repo.fork && !repo.archived; });
-      var cell = document.querySelector('.pkg-facts [data-live="repos"]');
-      if (!cell || !live.length) return;
-
-      cell.dataset.to = live.length;
-      var shown = cell.textContent.trim();
-      if (shown && shown !== '0') cell.textContent = live.length;   // already counted up
-    }
-
-    function apply(repos) {
-      repos.forEach(function (repo) {
-        var card = byRepo[String(repo.name).toLowerCase()];
-        if (card) paintTopics(card, repo.topics);
-      });
-      countRepos(repos);
-    }
-
-    if (cache.__repos) { apply(cache.__repos); return; }
-
-    // Unauthenticated GitHub allows 60 calls an hour per address; this is one of
-    // them per session, and a refusal just leaves the hand-written tags alone.
-    fetch('https://api.github.com/users/' + owner + '/repos?per_page=100', {
-      headers: { Accept: 'application/vnd.github+json' }
-    })
-      .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
-      .then(function (list) {
-        if (!Array.isArray(list)) return;
-        var slim = list.map(function (repo) {
-          return {
-            name: repo.name,
-            topics: repo.topics || [],
-            fork: !!repo.fork,
-            archived: !!repo.archived
-          };
-        });
-        cache.__repos = slim;
-        cacheWrite(cache);
-        apply(slim);
-      })
-      .catch(function () { /* rate-limited or offline — the curated tags stand */ });
-  }
-
-  /* ---------- lookup ---------- */
+  /* ---------- registry lookup (cards that carry a registry link) ---------- */
 
   function lookup(card, reg, name) {
     var key = reg + ':' + name;
+    var hit = pkgCache[key];
+
+    if (hit) {
+      paintDesc(card, hit.desc);
+      paintVersion(card, hit.version, hit.published);
+      return;
+    }
 
     skeleton(card);
 
@@ -266,16 +218,17 @@
       .then(function (j) {
         var meta = REGISTRIES[reg].read(j);
         if (!meta.version) return;
-        cache[key] = meta;
-        cacheWrite(cache);
-        paint(card, meta);
+        pkgCache[key] = meta;
+        writeCache('sessionStorage', PKG_CACHE, pkgCache);
+        paintDesc(card, meta.desc);
+        paintVersion(card, meta.version, meta.published);
       })
       .catch(function () {
-        clearSkeleton(card);      // offline, rate-limited, renamed — keep the static copy
+        clearSkeleton(card);      // offline, rate-limited, renamed — keep what is there
       });
   }
 
-  function identify(card) {
+  function registryOf(card) {
     var links = card.querySelectorAll('a[href]');
     for (var i = 0; i < links.length; i++) {
       for (var reg in REGISTRIES) {
@@ -286,9 +239,144 @@
     return null;
   }
 
-  function start(card) {
-    var id = identify(card);
-    if (id) lookup(card, id.reg, id.name);
+  function repoOf(card) {
+    var links = card.querySelectorAll('a[href]');
+    for (var i = 0; i < links.length; i++) {
+      var hit = /github\.com\/([^\/]+)\/([^\/?#]+)/i.exec(links[i].getAttribute('href'));
+      if (hit) return { owner: hit[1], name: hit[2] };
+    }
+    return null;
+  }
+
+  var observer = null;
+
+  function watch(card) {
+    var id = registryOf(card);
+    if (!id) return;
+    if (observer) observer.observe(card);
+    else lookup(card, id.reg, id.name);
+  }
+
+  /* ---------- cards built from a discovered repository ---------- */
+
+  function link(href, text, quiet) {
+    var a = document.createElement('a');
+    a.className = 'pkg__link' + (quiet ? ' pkg__link--quiet' : '');
+    a.href = href;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.textContent = text;
+    return a;
+  }
+
+  function buildCard(repo, owner, onPubDev) {
+    var card = document.createElement('article');
+    card.className = 'pkg pkg--mini reveal in';
+
+    var top = document.createElement('div');
+    top.className = 'pkg__top';
+    var name = document.createElement('h4');
+    name.className = 'pkg__name';
+    name.textContent = repo.name;
+    top.appendChild(name);
+    card.appendChild(top);
+
+    var desc = document.createElement('p');
+    desc.className = 'pkg__desc';
+    desc.textContent = repo.description || '';
+    card.appendChild(desc);
+
+    var tags = document.createElement('ul');
+    tags.className = 'tags';
+    card.appendChild(tags);
+
+    var links = document.createElement('div');
+    links.className = 'pkg__links';
+    if (onPubDev) links.appendChild(link('https://pub.dev/packages/' + repo.name, 'pub.dev'));
+    links.appendChild(link('https://github.com/' + owner + '/' + repo.name, 'GitHub', !!onPubDev));
+    card.appendChild(links);
+
+    paintTopics(card, repo.topics);
+    paintVersion(card, repo.version, repo.published);
+    return card;
+  }
+
+  // Discovered packages have no editorial home among the curated groups, so they
+  // arrive under a heading of their own, which only exists if something is in it.
+  function discoveryGroup() {
+    var existing = document.querySelector('.pkgs--discovered');
+    if (existing) return existing;
+
+    var grids = document.querySelectorAll('.pkgs--mini');
+    var anchor = grids[grids.length - 1];
+    if (!anchor || !anchor.parentNode) return null;
+
+    var heading = document.createElement('h3');
+    heading.className = 'pkg-group reveal in';
+    heading.textContent = 'Recently released';
+
+    var grid = document.createElement('div');
+    grid.className = 'pkgs pkgs--mini pkgs--discovered';
+
+    anchor.parentNode.insertBefore(heading, anchor.nextSibling);
+    anchor.parentNode.insertBefore(grid, heading.nextSibling);
+    return grid;
+  }
+
+  /* ---------- the GitHub index ---------- */
+
+  function ghJson(url) {
+    return fetch(url, { headers: { Accept: 'application/vnd.github+json' } })
+      .then(function (r) {
+        if (r.status === 404) return null;                  // no release: a normal answer
+        return r.ok ? r.json() : Promise.reject(r.status);
+      });
+  }
+
+  function loadIndex(owner, known) {
+    var cached = readCache('localStorage', GH_CACHE, GH_TTL);
+    if (cached && cached.owner === owner) return Promise.resolve(cached);
+
+    return ghJson('https://api.github.com/users/' + owner + '/repos?per_page=100')
+      .then(function (list) {
+        if (!Array.isArray(list)) return Promise.reject('shape');
+
+        var repos = list.map(function (repo) {
+          return {
+            name: repo.name,
+            description: repo.description || '',
+            topics: repo.topics || [],
+            fork: !!repo.fork,
+            archived: !!repo.archived
+          };
+        });
+
+        // Only repositories without a card need to be asked about releases. The
+        // ones that have a card are released by definition and read their version
+        // from pub.dev or PyPI, which costs nothing against the GitHub limit.
+        var unknown = repos.filter(function (repo) {
+          return !repo.fork && !repo.archived && !known[repo.name.toLowerCase()];
+        });
+
+        return Promise.all(unknown.map(function (repo) {
+          return ghJson('https://api.github.com/repos/' + owner + '/' + repo.name + '/releases/latest')
+            .then(function (rel) {
+              if (!rel || !rel.tag_name) return null;
+              repo.version = rel.tag_name;
+              repo.published = rel.published_at;
+              return repo;
+            })
+            .catch(function () { return null; });
+        })).then(function (released) {
+          var index = {
+            owner: owner,
+            repos: repos,
+            released: released.filter(Boolean)
+          };
+          writeCache('localStorage', GH_CACHE, index);
+          return index;
+        });
+      });
   }
 
   /* ---------- wiring ---------- */
@@ -296,12 +384,30 @@
   var cards = [].slice.call(document.querySelectorAll('.pkg'));
   if (!cards.length || !window.fetch) return;
 
-  // Package counts come from the cards themselves, so adding a card to the HTML
-  // is enough — the tallies above the list cannot drift out of step with it.
-  (function tally() {
+  if ('IntersectionObserver' in window) {
+    observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        observer.unobserve(entry.target);
+        var id = registryOf(entry.target);
+        if (id) lookup(entry.target, id.reg, id.name);
+      });
+    }, { rootMargin: '200px 0px' });
+  }
+
+  function setCount(cell, value) {
+    if (!cell) return;
+    cell.dataset.to = value;                                  // picked up by the count-up
+    var shown = cell.textContent.trim();
+    if (shown && shown !== '0') cell.textContent = value;     // already counted up
+  }
+
+  // The package tallies are counted from the cards on the page, so they cannot
+  // drift from what is shown — including cards added or removed below.
+  function tally() {
     var counts = { pub: 0, pypi: 0 };
-    cards.forEach(function (card) {
-      var id = identify(card);
+    [].slice.call(document.querySelectorAll('.pkg')).forEach(function (card) {
+      var id = registryOf(card);
       if (id) counts[id.reg]++;
     });
 
@@ -311,39 +417,70 @@
     var facts = document.querySelectorAll('.pkg-facts .count');
     var values = [total, counts.pub, counts.pypi];
     for (var i = 0; i < values.length && i < facts.length; i++) {
-      facts[i].dataset.to = values[i];               // picked up by the count-up
-      var shown = facts[i].textContent.trim();
-      if (shown && shown !== '0') facts[i].textContent = values[i];   // already counted up
+      setCount(facts[i], values[i]);
     }
-  })();
-
-  loadTopics(cards);
-
-  // Anything already in this session's cache costs nothing to show, so paint it
-  // up front instead of making it wait for the card to scroll into view again.
-  var pending = cards.filter(function (card) {
-    var id = identify(card);
-    if (!id) return false;
-    var hit = cache[id.reg + ':' + id.name];
-    if (!hit) return true;
-    paint(card, hit);
-    return false;
-  });
-
-  if (!pending.length) return;
-
-  if (!('IntersectionObserver' in window)) {
-    pending.forEach(start);
-    return;
   }
 
-  var io = new IntersectionObserver(function (entries) {
-    entries.forEach(function (entry) {
-      if (!entry.isIntersecting) return;
-      io.unobserve(entry.target);
-      start(entry.target);
-    });
-  }, { rootMargin: '200px 0px' });
+  cards.forEach(watch);
+  tally();
 
-  pending.forEach(function (card) { io.observe(card); });
+  var seed = repoOf(cards[0]);
+  if (!seed) return;
+
+  var known = {};
+  cards.forEach(function (card) {
+    var repo = repoOf(card);
+    if (repo) known[repo.name.toLowerCase()] = card;
+  });
+
+  loadIndex(seed.owner, known)
+    .then(function (index) {
+      index.repos.forEach(function (repo) {
+        var key = repo.name.toLowerCase();
+        var card = known[key];
+        if (!card) return;
+
+        // A card whose repository has since been archived, or turned into a fork,
+        // no longer belongs on a page about maintained work.
+        if (repo.fork || repo.archived) {
+          if (card.parentNode) card.parentNode.removeChild(card);
+          delete known[key];
+          return;
+        }
+
+        paintTopics(card, repo.topics);
+      });
+
+      // Repositories that are neither forks nor archived, whatever else they are.
+      var repoCount = index.repos.filter(function (repo) {
+        return !repo.fork && !repo.archived;
+      }).length;
+      if (repoCount) setCount(document.querySelector('.pkg-facts [data-live="repos"]'), repoCount);
+
+      var fresh = index.released.filter(function (repo) {
+        return !known[repo.name.toLowerCase()];
+      });
+
+      if (!fresh.length) { tally(); return; }
+
+      // Each discovered repository is offered to pub.dev as well, so a Dart
+      // package links to both places and anything else just links to GitHub.
+      return Promise.all(fresh.map(function (repo) {
+        return fetch('https://pub.dev/api/packages/' + repo.name)
+          .then(function (r) { return r.ok; })
+          .catch(function () { return false; });
+      })).then(function (onPubDev) {
+        var grid = discoveryGroup();
+        if (!grid) return;
+
+        fresh.forEach(function (repo, i) {
+          var card = buildCard(repo, index.owner, onPubDev[i]);
+          grid.appendChild(card);
+          known[repo.name.toLowerCase()] = card;
+        });
+
+        tally();
+      });
+    })
+    .catch(function () { /* rate-limited or offline — the page keeps what it has */ });
 })();
