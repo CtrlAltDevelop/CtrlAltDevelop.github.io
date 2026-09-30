@@ -929,7 +929,7 @@ const EXHIBITS = {
   'about':       { title: 'FLUTTER PROFILE',  meta: 'developer.json · mobile + backend',      screen: 1 },
   'approach':    { title: 'DART ARCH',        meta: 'BLoC · Result<T> · clean architecture',  screen: 2 },
   'work':        { title: 'PYTHON API',       meta: '@CtrlAltDevelop · api_client.py',        screen: 3 },
-  'open-source': { title: 'DART PACKAGES',    meta: 'pub.dev · 17 published packages',        screen: 4 },
+  'open-source': { title: 'DART PACKAGES',    meta: 'pub.dev · PyPI · MIT licensed',          screen: 4 },
   'experience':  { title: 'GITHUB',           meta: 'CtrlAltDevelop · git log --graph',       screen: 5 },
   'stack':       { title: 'DEV STACK',        meta: 'Flutter + Python + .NET',                screen: 6 },
   'research':    { title: 'PYTHON RESEARCH',  meta: 'signal_pipeline.py · pytest',            screen: 7 },

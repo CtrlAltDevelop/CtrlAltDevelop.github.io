@@ -45,15 +45,30 @@ Then open <http://localhost:4321>.
 ## Updating the résumé
 
 Replace `assets/Mohammad-Zarif-Resume.pdf` and update the matching content in
-`index.html` (experience timeline, work cards, open-source packages, research list).
+`index.html` (experience timeline, work cards, open-source packages, education).
+Experience is framed as nine years writing software (since 2017), eight professionally (since 2018). Keep that consistent everywhere it appears: the hero fact, the
+meta and Open Graph descriptions, the JSON-LD `Person`, and `assets/img/og-cover.png`.
+
+## Page structure
+
+Sections run About, Work, Experience, Open source, Approach, Stack, Education,
+Contact. Work and experience come first on purpose, because that is what a hiring
+manager reads in the first thirty seconds. Section numbers (`.section__num`) are
+hardcoded 01–08, so inserting a section means renumbering everything after it.
+
+Count-up numbers carry their real value in the HTML (`<span class="count"
+data-to="8">8</span>`) and are only animated by `main.js`, so reader mode, print, ATS
+parsers and link previews never see a zero.
 
 ## Open-source packages
 
-The `#open-source` section lists seventeen packages: sixteen Dart/Flutter packages on
-pub.dev and `django-ninja-starter` on PyPI, each mirrored at
-`github.com/CtrlAltDevelop/<name>`. Two flagship entries (`django-ninja-starter`,
-`ohlcv_chart`) use `.pkg--flagship` and share one row with feature bullets; the rest
-use `.pkg--mini` in a three-column grid with a single-line description. Versions are not
-shown on the page, so republishing a package needs no change here. Section numbers
-(`.section__num`) are also hardcoded and run 01–08, so inserting a section means
-renumbering everything after it.
+The `#open-source` section lists twenty packages — sixteen Dart/Flutter packages on
+pub.dev and four Python packages on PyPI (`django-ninja-starter`, `matching-engine`,
+`mdp-outbox`, `django-reliable-outbox`) — plus two backend services with no registry
+release (`oauth-dpop-server`, `ledger-service`), each mirrored at
+`github.com/CtrlAltDevelop/<name>`. The flagship entries (`django-ninja-starter`,
+`ohlcv_chart`) and the two services use `.pkg--flagship`, two to a row with feature
+bullets. The Python packages follow as `.pkg--mini`; the remaining fifteen Dart
+packages sit inside a closed `<details class="more">`, so they stay in the HTML for
+search engines but don't lengthen the page. The package tallies are counted from
+registry links, so a card with only a GitHub link is not counted as a package.

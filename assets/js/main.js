@@ -10,44 +10,6 @@
   var yearEl = document.getElementById('year');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-  /* ---------- preloader ----------
-     Fake-progresses to 90% while assets stream, then completes on load.
-     A hard 4s cap guarantees the page is never held hostage by a CDN. */
-  (function () {
-    var loader = document.getElementById('loader');
-    var fill = document.getElementById('loader-fill');
-    var pct = document.getElementById('loader-pct');
-    if (!loader) return;
-
-    var value = 0, done = false;
-
-    function set(v) {
-      value = Math.max(value, Math.min(100, v));
-      fill.style.width = value + '%';
-      pct.textContent = Math.round(value);
-    }
-
-    function finish() {
-      if (done) return;
-      done = true;
-      set(100);
-      setTimeout(function () {
-        loader.classList.add('is-done');
-        document.body.classList.add('is-ready');
-      }, 260);
-    }
-
-    if (reduced) { finish(); return; }
-
-    var creep = setInterval(function () {
-      set(value + (90 - value) * 0.12 + 1);
-      if (value >= 89) clearInterval(creep);
-    }, 90);
-
-    window.addEventListener('load', function () { clearInterval(creep); finish(); });
-    setTimeout(function () { clearInterval(creep); finish(); }, 4000);
-  })();
-
   /* ---------- deep-link landing ----------
      The browser jumps to #hash before the page has settled: the webfonts
      swap and the WebGL canvas takes its final height after that first jump,
@@ -79,7 +41,7 @@
 
     window.addEventListener('load', reaim);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(reaim);
-    setTimeout(reaim, 700);                    // after the loader hands over
+    setTimeout(reaim, 700);                    // after late layout shifts
   })();
 
   /* ---------- scroll progress ---------- */
@@ -291,10 +253,11 @@
   /* ---------- role rotator ---------- */
   var rotator = document.getElementById('rotator');
   var ROLES = [
-    'Senior Mobile & Backend Developer',
-    'Flutter & Dart Specialist',
-    'Python & .NET Backend Engineer',
-    'Clean Architecture Practitioner'
+    'Senior Software Engineer',
+    'Flutter & Python',
+    'Flutter for Trading & Brokerage Apps',
+    'Python Backends for FinTech',
+    'Secure Auth & Money Movement'
   ];
 
   if (rotator && !reduced) {

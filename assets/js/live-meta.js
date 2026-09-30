@@ -98,7 +98,10 @@
     'django': 'Django', 'django-ninja': 'Django Ninja', 'pypi': 'PyPI',
     '2fa': '2FA', 'mfa': 'MFA', 'sso': 'SSO', 'crud': 'CRUD', 'dtcg': 'DTCG',
     'rest': 'REST', 'rest-api': 'REST API', 'pubsub': 'Pub/Sub',
-    'tabbar': 'Tab Bar', 'tabs': 'Tabs', 'graphql': 'GraphQL', 'grpc': 'gRPC'
+    'tabbar': 'Tab Bar', 'tabs': 'Tabs', 'graphql': 'GraphQL', 'grpc': 'gRPC',
+    'fastapi': 'FastAPI', 'postgresql': 'PostgreSQL', 'timescaledb': 'TimescaleDB',
+    'pkce': 'PKCE', 'asyncio': 'asyncio', 'fintech': 'FinTech',
+    'oauth2-server': 'OAuth 2.0 Server'
   };
 
   // GitHub hands topics back alphabetically, which buries the interesting ones:
@@ -271,7 +274,7 @@
 
   function buildCard(repo, owner, onPubDev) {
     var card = document.createElement('article');
-    card.className = 'pkg pkg--mini reveal in';
+    card.className = 'pkg pkg--mini reveal is-in';
 
     var top = document.createElement('div');
     top.className = 'pkg__top';
@@ -312,7 +315,7 @@
     if (!anchor || !anchor.parentNode) return null;
 
     var heading = document.createElement('h3');
-    heading.className = 'pkg-group reveal in';
+    heading.className = 'pkg-group reveal is-in';
     heading.textContent = 'Recently released';
 
     var grid = document.createElement('div');
