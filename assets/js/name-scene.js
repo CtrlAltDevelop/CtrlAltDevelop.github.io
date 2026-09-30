@@ -17,9 +17,15 @@ import * as THREE from 'three';
 const title = document.querySelector('.hero__name');
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+// The static text is hidden by CSS from the first paint; any path that can't
+// draw particles must give it back.
+const showText = () => title && title.classList.add('no-gl');
+
 if (title && !reduced && supportsWebGL()) {
   // Glyph sampling has to wait for the webfont, or it samples the fallback face.
-  document.fonts.ready.then(() => boot(title)).catch(() => {});
+  document.fonts.ready.then(() => boot(title)).catch(showText);
+} else {
+  showText();
 }
 
 function supportsWebGL() {
@@ -38,6 +44,8 @@ const HEAT = new THREE.Color('#7C9AFF');   // --accent: a scattered particle glo
 
 // Physics, per frame at 60 fps. Stiffness varies per particle so the name
 // re-forms as a ripple rather than all at once.
+// ponytail: steps per frame, not per second — a 120 Hz display settles twice as
+// fast. Scale by the frame delta if that ever reads wrong.
 const SPRING = 0.05;
 const DAMPING = 0.86;
 
@@ -46,6 +54,7 @@ function boot(h1) {
   try {
     renderer = new THREE.WebGLRenderer({ alpha: true, antialias: false, powerPreference: 'low-power' });
   } catch (_) {
+    showText();
     return;
   }
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -97,7 +106,7 @@ function boot(h1) {
   let width = 0, height = 0, radius = 0;
 
   const pointer = { x: -1e4, y: -1e4, px: -1e4, py: -1e4, moved: false };
-  let running = false, visible = true, shown = false;
+  let running = false, visible = true;
 
   /* ---------- layout: sample the glyphs where the browser put them ---------- */
 
@@ -160,16 +169,18 @@ function boot(h1) {
       ctx.fillText(match[0], r.left - box.left - left, r.top - box.top - top + ascent);
     }
 
-    // One particle per `gap` pixels of glyph: roughly 2–3k on a desktop
-    // headline, fewer on a phone, and dense enough to read as solid type.
-    const gap = Math.max(2, Math.min(3, Math.round(fontSize / 36)));
+    // One particle every 2px of glyph (~6k on a desktop headline, fewer on a
+    // phone). Points are drawn wider than the gap so they overlap and the name
+    // reads as solid type at rest.
+    const gap = 2;
     const data = ctx.getImageData(0, 0, width, height).data;
     const homes = [], colors = [];
     for (let y = 0; y < height; y += gap) {
       for (let x = 0; x < width; x += gap) {
         const i = (y * width + x) * 4;
         if (data[i + 3] < 140) continue;
-        homes.push(x, y, 0);
+        // Sub-pixel jitter so the moving name reads as dust, not a dot grid.
+        homes.push(x + (Math.random() - 0.5) * gap * 0.5, y + (Math.random() - 0.5) * gap * 0.5, 0);
         colors.push(data[i] / 255, data[i + 1] / 255, data[i + 2] / 255);
       }
     }
@@ -212,7 +223,7 @@ function boot(h1) {
     points.frustumCulled = false;
     scene.add(points);
 
-    material.uniforms.uSize.value = gap * 1.3 * dpr;
+    material.uniforms.uSize.value = gap * 1.7 * dpr;
     radius = fontSize * 1.15;
     wake();
   }
@@ -270,16 +281,14 @@ function boot(h1) {
     if (!running) return;
     const busy = step();
     renderer.render(scene, camera);
-
-    if (!shown) {
-      shown = true;
-      h1.classList.add('is-gl');      // hide the DOM text only once particles are drawn
-    }
+    // Particles on, DOM text off, once a frame is drawn — and for good. Handing
+    // back to the text at rest flickered, because any pointer move swapped them.
+    h1.classList.add('is-gl');
 
     if (busy && visible && !document.hidden) {
       requestAnimationFrame(frame);
     } else {
-      // Settled: snap home so the resting name is pixel-exact, draw once, stop.
+      // Settled: snap home so the resting name is exact, draw once, stop.
       if (!busy) {
         pos.set(home);
         heat.fill(0);

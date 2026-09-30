@@ -309,16 +309,25 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
 }
 
 .hero__name {
-  font-size: clamp(2.9rem, 9.5vw, 6.6rem);
-  font-weight: 700; letter-spacing: -.035em;
+  font-size: clamp(3.2rem, 11vw, 8.6rem);
+  font-weight: 700; letter-spacing: -.035em; line-height: 1;
   background: linear-gradient(150deg, #FFFFFF 12%, #B9C6D4 62%, #6D7C8C 100%);
   -webkit-background-clip: text; background-clip: text; color: transparent;
   position: relative;
 }
-/* name-scene.js draws the name as particles over the real text, then hides the
-   text (still selectable and read by assistive tech) once the first frame is up. */
+/* name-scene.js draws the name as particles, and the static text never shows:
+   with scripts on, its gradient starts at zero size (the text stays selectable
+   and read by assistive tech). The text only comes back if the particles can't
+   run — .no-gl from the script, or the fallback animation if the script never
+   arrives (blocked CDN). */
 .hero__name-gl { position: absolute; pointer-events: none; }
-.hero__name.is-gl { background: none; -webkit-text-fill-color: transparent; }
+.js .hero__name { background-size: 0 0; animation: name-fallback 0s 4s forwards; }
+.js .hero__name.is-gl { background: none; animation: none; }
+.js .hero__name.no-gl { background-size: 100% 100%; animation: none; }
+@keyframes name-fallback { to { background-size: 100% 100%; } }
+@media (prefers-reduced-motion: reduce) {
+  .js .hero__name { background-size: 100% 100%; animation: none; }
+}
 
 .hero__role {
   margin: .5rem 0 1.25rem;
@@ -920,7 +929,7 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
     justify-content: center;
     padding-top: 6rem;
   }
-  .hero__name { font-size: clamp(2.5rem, 12vw, 3.4rem); }
+  .hero__name { font-size: clamp(2.8rem, 15vw, 4.3rem); }
   .hero__tagline { font-size: .96rem; line-height: 1.62; max-width: 34ch; }
   .hero__actions { margin-top: 1.5rem; gap: .6rem; }
   .eyebrow { font-size: .64rem; padding: .38rem .75rem; margin-bottom: 1.2rem; letter-spacing: .1em; }

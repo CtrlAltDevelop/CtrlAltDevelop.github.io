@@ -12,13 +12,18 @@ Plain HTML, CSS and ES modules — no build step, no framework, no dependencies 
 ```
 index.html                  all page content
 assets/css/style.css        design tokens + every style rule
-assets/js/hero-scene.js     hero WebGL scene (constellation + link pulses)
-assets/js/neural-scene.js   research-section accent (feed-forward network)
-assets/js/contact-scene.js  contact-section morphing particle cloud
-assets/js/main.js           preloader, nav, scroll spy, reveals, counters,
-                            card tilt, magnetic buttons, role rotator
+assets/js/gallery-scene.js  background WebGL gallery, one exhibit per section
+assets/js/name-scene.js     hero name as particles: scatters on pointer move, re-forms
+assets/js/live-meta.js      live versions, topics and counts from pub.dev, PyPI, GitHub
+assets/js/main.js           nav, scroll spy, reveals, counters, card tilt,
+                            magnetic buttons, role rotator
 assets/Mohammad-Zarif-Resume.pdf
 ```
+
+The hero `<h1>` stays real text. `name-scene.js` samples the glyphs where the browser
+laid them out (so wrapping on mobile matches), draws them as particles only while they
+move, and fades back to the text at rest. With no WebGL or under reduced motion it
+does nothing and the plain text shows.
 
 ## Running locally
 
