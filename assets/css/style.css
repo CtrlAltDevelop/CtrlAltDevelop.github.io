@@ -320,7 +320,10 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
    and read by assistive tech). The text only comes back if the particles can't
    run — .no-gl from the script, or the fallback animation if the script never
    arrives (blocked CDN). */
-.hero__name-gl { position: absolute; pointer-events: none; }
+/* max-width: none — the global canvas rule would squeeze it to the h1's width,
+   but it is deliberately wider (margin for scatter), and a squeezed canvas
+   shifts the pointer away from the particles. */
+.hero__name-gl { position: absolute; pointer-events: none; max-width: none; }
 .js .hero__name { background-size: 0 0; animation: name-fallback 0s 4s forwards; }
 .js .hero__name.is-gl { background: none; animation: none; }
 .js .hero__name.no-gl { background-size: 100% 100%; animation: none; }
