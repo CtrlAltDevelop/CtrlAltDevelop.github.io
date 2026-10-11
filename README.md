@@ -17,7 +17,6 @@ assets/js/name-scene.js     hero name as particles: scatters on pointer move, re
 assets/js/live-meta.js      live versions, topics and counts from pub.dev, PyPI, GitHub
 assets/js/main.js           nav, scroll spy, reveals, counters, card tilt,
                             magnetic buttons, role rotator
-assets/Mohammad-Zarif-Resume.pdf
 ```
 
 The hero `<h1>` stays real text. `name-scene.js` samples the glyphs where the browser
@@ -49,7 +48,8 @@ Then open <http://localhost:4321>.
 
 ## Updating the résumé
 
-Replace `assets/Mohammad-Zarif-Resume.pdf` and update the matching content in
+The résumé lives on FlowCV (https://flowcv.com/resume/p3domranqsia), linked from the nav
+and hero. Edit it there, then update the matching content in
 `index.html` (experience timeline, work cards, open-source packages, education).
 Experience is framed as nine years writing software (since 2017), eight professionally (since 2018). Keep that consistent everywhere it appears: the hero fact, the
 meta and Open Graph descriptions, the JSON-LD `Person`, and `assets/img/og-cover.png`.
