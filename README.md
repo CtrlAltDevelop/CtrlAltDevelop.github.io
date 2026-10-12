@@ -48,8 +48,8 @@ Then open <http://localhost:4321>.
 
 ## Updating the résumé
 
-The résumé lives on FlowCV (https://flowcv.com/resume/p3domranqsia), linked from the nav
-and hero. Edit it there, then update the matching content in
+The résumé is edited on FlowCV and exported to `assets/Mohammad-Zarif-Resume.pdf`, linked from the nav
+and hero. Edit it there, re-export the PDF over that file, then update the matching content in
 `index.html` (experience timeline, work cards, open-source packages, education).
 Experience is framed as nine years writing software (since 2017), eight professionally (since 2018). Keep that consistent everywhere it appears: the hero fact, the
 meta and Open Graph descriptions, the JSON-LD `Person`, and `assets/img/og-cover.png`.
