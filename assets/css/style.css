@@ -1114,3 +1114,15 @@ body.no-webgl .gallery-stage { display: none; }
   #experience .tl__body > p:last-child { font-size: .86rem; }
   #experience .tl__date { font-size: .72rem; padding-top: 0; }
 }
+
+
+/* ---------- card-heavy sections span the full width again ----------
+   Work, Open source, Stack and Education are grids of cards; the 3D exhibit sits
+   behind them instead of beside them. The others keep the left column. */
+@media (min-width: 1200px) {
+  :is(#work, #open-source, #stack, #research)[data-content] .wrap {
+    max-width: var(--wrap); margin-inline: auto; padding-inline: var(--pad);
+  }
+  #research[data-content] .research { grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); }
+  #stack[data-content] .stack { grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr)); }
+}
