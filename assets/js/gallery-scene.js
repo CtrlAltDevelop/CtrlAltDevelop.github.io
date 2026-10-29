@@ -92,6 +92,7 @@ function boot(target) {
     exhibit.userData.baseY = baseY;
     exhibit.rotation.y = side * -0.18;
     exhibit.userData.baseRotY = exhibit.rotation.y;
+    exhibit.scale.setScalar(1.12);
     world.add(exhibit);
     exhibits.push(exhibit);
   }
@@ -242,10 +243,14 @@ function createExhibit(index, screenIndex, side, accent, ice, slate, random, sec
   group.userData.floatY = 0;
   group.userData.scanners = [];
 
-  const frameMaterial = lineMaterial(index === 3 || index === 8 ? accent : ice, 0.34);
-  const quietMaterial = lineMaterial(slate, 0.25);
+  const frameMaterial = lineMaterial(index === 3 || index === 8 ? accent : ice, 0.55);
+  const quietMaterial = lineMaterial(slate, 0.4);
   const accentMaterial = lineMaterial(accent, 0.78);
   group.userData.materials.push(frameMaterial, quietMaterial, accentMaterial);
+
+  const glow = makeGlow(accent);
+  group.add(glow);
+  group.userData.materials.push(glow.material);
 
   const outer = new THREE.LineSegments(
     new THREE.EdgesGeometry(new THREE.BoxGeometry(6.8, 6.8, 0.34)),
@@ -426,8 +431,17 @@ function makeCodeScreen(index, accentMaterial, iceMaterial) {
     toneMapped: false
   });
   screenMaterial.userData.baseOpacity = screenMaterial.opacity;
-  group.userData.materials = [screenMaterial];
+  // dark glass behind the code so the grid and particles never cut through the text
+  const backingMaterial = new THREE.MeshBasicMaterial({
+    color: 0x090c15, transparent: true, opacity: 0.62, depthWrite: false, side: THREE.DoubleSide
+  });
+  backingMaterial.userData.baseOpacity = backingMaterial.opacity;
+  group.userData.materials = [screenMaterial, backingMaterial];
   group.userData.scanners = [];
+
+  const backing = new THREE.Mesh(new THREE.PlaneGeometry(4.82, 3.07), backingMaterial);
+  backing.position.z = -0.03;
+  group.add(backing);
 
   const screen = new THREE.Mesh(new THREE.PlaneGeometry(4.65, 2.9), screenMaterial);
   group.add(screen);
@@ -1284,6 +1298,31 @@ function addApplicationFlow(world, spacing, count, random, accent, ice, slate) {
     packets.push(packet);
   }
   return packets;
+}
+
+/* A soft additive halo behind an exhibit; one shared texture across all of them. */
+let glowTexture;
+function makeGlow(color) {
+  if (!glowTexture) {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 128;
+    const ctx = canvas.getContext('2d');
+    const gradient = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+    gradient.addColorStop(0, 'rgba(255,255,255,.55)');
+    gradient.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 128, 128);
+    glowTexture = new THREE.CanvasTexture(canvas);
+  }
+  const material = new THREE.SpriteMaterial({
+    map: glowTexture, color, transparent: true, opacity: 0.22,
+    depthWrite: false, blending: THREE.AdditiveBlending, fog: false
+  });
+  material.userData.baseOpacity = material.opacity;
+  const sprite = new THREE.Sprite(material);
+  sprite.scale.setScalar(13);
+  sprite.position.z = -1.2;
+  return sprite;
 }
 
 function lineMaterial(color, opacity) {
