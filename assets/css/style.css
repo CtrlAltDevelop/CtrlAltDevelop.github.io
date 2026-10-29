@@ -1079,13 +1079,12 @@ body.no-webgl .gallery-stage { display: none; }
 
 
 /* ---------- content beside the object ----------
-   boot() in gallery-scene.js tags each section with the side its content sits on;
-   the 3D exhibit takes the other half, so both stay visible. Below 1200px the page
+   boot() in gallery-scene.js tags each section whose 3D exhibit sits on the right;
+   the content keeps to the left so both stay visible. Below 1200px the page
    keeps its centred single column, and with no WebGL no section is tagged. */
 @media (min-width: 1200px) {
   .section[data-content] .wrap { max-width: none; margin-inline: 0; }
-  .section[data-content="left"] .wrap  { padding-left: max(var(--pad), 6vw); padding-right: 44vw; }
-  .section[data-content="right"] .wrap { padding-right: max(var(--pad), 6vw); padding-left: 44vw; }
+  .section[data-content="left"] .wrap { padding-left: max(var(--pad), 6vw); padding-right: 38vw; }
   .section[data-content] .about,
   .section[data-content] .research { grid-template-columns: minmax(0, 1fr); }
   .section[data-content] .stack { grid-template-columns: repeat(2, minmax(0, 1fr)); }
