@@ -86,7 +86,9 @@ function boot(target) {
     const side = i === 0 ? 1 : (i % 2 ? -1 : 1);
     const exhibit = createExhibit(i, EXHIBITS[sectionIds[i]].screen, side, accent, ice, slate, seeded, sectionIds[i]);
     const baseY = (i % 3 - 1) * 0.45;
-    exhibit.position.set(side * (i === 0 ? 3.8 : 4.6), baseY, 4 - i * spacing);
+    exhibit.position.set(side * (i === 0 ? 3.8 : 5), baseY, 4 - i * spacing);
+    // the page puts its content on the side the exhibit is not on (see [data-content] in the CSS)
+    document.getElementById(sectionIds[i]).dataset.content = side === 1 ? 'left' : 'right';
     exhibit.userData.baseY = baseY;
     exhibit.rotation.y = side * -0.18;
     exhibit.userData.baseRotY = exhibit.rotation.y;
@@ -136,15 +138,17 @@ function boot(target) {
     const scenePosition = Math.min(sectionIds.length - 1, next + magneticTravel(local));
     cameraGoal.z = 16 - scenePosition * spacing;
     setActive(next);
+    // orbit: the camera swings further round the exhibit the deeper you read into its section,
+    // and slides sideways with it so the object stays on its own half of the screen
+    cameraYawGoal = next === 0 ? 0 : (next % 2 ? 1 : -1) * (0.12 + local * 0.18);
+    cameraGoal.x = cameraYawGoal * 8;
     if (reduced) renderStatic();
   }
 
   function setActive(index) {
     if (index === activeIndex) return;
     activeIndex = index;
-    cameraGoal.x = (index % 2 ? 1 : -1) * Math.min(index, 1) * 0.72;
     cameraGoal.y = (index % 3 - 1) * 0.16;
-    cameraYawGoal = index === 0 ? 0 : (index % 2 ? 0.105 : -0.105);
   }
 
   function resize() {
