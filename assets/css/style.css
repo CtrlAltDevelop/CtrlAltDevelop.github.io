@@ -48,7 +48,7 @@
   --line-hi:       rgba(255, 255, 255, .16);
 
   --txt:           #E9EDF5;
-  --txt-dim:       #9BA5B8;
+  --txt-dim:       #B7C0D1;
   --txt-faint:     #737C90;   /* AA-contrast (4.5:1+) against --bg at normal text sizes */
 
   --accent:        #7C9AFF;
@@ -68,7 +68,7 @@
   /* liquid glass — the same surface the hero's floating code cards are made
      of, expressed in CSS: a cool translucent body, a lit top rim, and a
      gradient that falls away down the card. */
-  --glass-body:    rgba(13, 17, 27, .58);
+  --glass-body:    rgba(13, 17, 27, .88);
   --glass-sheen:   linear-gradient(158deg, rgba(255,255,255,.06), rgba(255,255,255,.014) 44%, rgba(124,154,255,.035));
   --glass-line:    rgba(255, 255, 255, .095);
   --glass-line-hi: rgba(174, 196, 255, .34);
@@ -395,6 +395,7 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
 
 /* ---------- about ---------- */
 .about { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: clamp(2rem, 5vw, 4.5rem); align-items: start; }
+.about__lead { background: rgba(6, 7, 10, .92); border: 1px solid var(--line); border-radius: var(--radius); padding: clamp(1.1rem, 2.4vw, 1.75rem); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
 .about__lead p { font-size: 1.06rem; color: var(--txt-dim); }
 .about__lead p:last-child { margin-bottom: 0; }
 
@@ -1009,7 +1010,7 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
   filter: saturate(1.05) contrast(1.02);
   transition: opacity 1.2s var(--ease);
 }
-.gallery-stage__canvas.is-live { opacity: .82; }
+.gallery-stage__canvas.is-live { opacity: .5; }
 .gallery-stage::after {
   content: '';
   position: absolute;
@@ -1022,5 +1023,5 @@ main, .footer { position: relative; z-index: 2; }
 body.no-webgl .gallery-stage { display: none; }
 
 @media (max-width: 780px) {
-  .gallery-stage__canvas.is-live { opacity: .64; }
+  .gallery-stage__canvas.is-live { opacity: .4; }
 }
