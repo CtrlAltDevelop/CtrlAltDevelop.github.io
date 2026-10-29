@@ -529,7 +529,6 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
 }
 .pkg:hover { transform: translateY(-3px); }
 .pkg:hover::before { opacity: 1; }
-.pkg--feature { grid-column: 1 / -1; }
 
 .pkg__top { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: .7rem; }
 .pkg__name {
@@ -586,7 +585,6 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
   width: 4px; height: 4px; border-radius: 1px; background: var(--accent); opacity: .6;
   transform: rotate(45deg);
 }
-.pkg--feature .pkg__list { grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: .6rem 2rem; }
 
 /* flagship — the two projects that are products, not building blocks:
    full width, glass surface, display type on the name. */
@@ -710,7 +708,6 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
   transition: border-color .25s, color .25s, transform .25s var(--ease);
 }
 .chips li:hover { border-color: rgba(124, 154, 255, .4); color: var(--accent); transform: translateY(-2px); }
-.chips--quiet li { font-family: var(--font-mono); font-size: .74rem; color: var(--txt-dim); }
 
 .langs { display: grid; gap: .7rem; }
 .langs li { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; font-size: .92rem; border-bottom: 1px dashed var(--line); padding-bottom: .7rem; }
