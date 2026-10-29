@@ -89,6 +89,7 @@ function boot(target) {
     exhibit.position.set(side * (i === 0 ? 3.8 : 4.6), baseY, 4 - i * spacing);
     exhibit.userData.baseY = baseY;
     exhibit.rotation.y = side * -0.18;
+    exhibit.userData.baseRotY = exhibit.rotation.y;
     world.add(exhibit);
     exhibits.push(exhibit);
   }
@@ -177,7 +178,8 @@ function boot(target) {
     for (let i = 0; i < exhibits.length; i++) {
       const exhibit = exhibits[i];
       const near = Math.max(0, 1 - Math.abs((camera.position.z - 12) - exhibit.position.z) / 19);
-      exhibit.rotation.y += dt * (0.025 + i * 0.003);
+      // sway around the facing angle: a full spin shows the back of every text plane mirrored
+      exhibit.rotation.y = exhibit.userData.baseRotY + Math.sin(time * (0.16 + i * 0.01) + i) * 0.38;
       exhibit.rotation.x = Math.sin(time * 0.22 + i) * 0.035;
       exhibit.userData.floatY = Math.sin(time * 0.34 + i * 1.7) * 0.32;
       exhibit.position.y = exhibit.userData.baseY + exhibit.userData.floatY;
