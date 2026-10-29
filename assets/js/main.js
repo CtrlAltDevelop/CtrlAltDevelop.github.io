@@ -282,4 +282,40 @@
       setTimeout(tick, dir > 0 ? 52 : 26);
     })();
   }
+
+  /* ---------- section dots + floating contact ---------- */
+  (function () {
+    var sections = Array.prototype.slice.call(document.querySelectorAll('main > section[id]'));
+    if (!sections.length || !('IntersectionObserver' in window)) return;
+
+    var dots = document.createElement('nav');
+    dots.className = 'dots';
+    dots.setAttribute('aria-label', 'Sections');
+    var byId = {};
+    sections.forEach(function (sec) {
+      var h = sec.querySelector('h2');
+      var a = document.createElement('a');
+      a.href = '#' + sec.id;
+      a.setAttribute('data-label', h ? h.textContent.trim() : sec.id);
+      a.setAttribute('aria-label', a.getAttribute('data-label'));
+      dots.appendChild(a);
+      byId[sec.id] = a;
+    });
+    document.body.appendChild(dots);
+
+    var fab = document.createElement('a');
+    fab.className = 'btn btn--primary float-contact';
+    fab.href = '#contact';
+    fab.textContent = 'Contact';
+    document.body.appendChild(fab);
+
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        Object.keys(byId).forEach(function (id) { byId[id].classList.toggle('is-active', id === e.target.id); });
+        fab.classList.toggle('is-shown', e.target.id !== 'hero' && e.target.id !== 'contact');
+      });
+    }, { rootMargin: '-45% 0px -45% 0px' });   // the section under the viewport's midline
+    sections.forEach(function (sec) { io.observe(sec); });
+  })();
 })();

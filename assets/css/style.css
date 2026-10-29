@@ -228,7 +228,8 @@ a:focus-visible, button:focus-visible {
 .brand__mark { display: grid; place-items: center; transition: transform .4s var(--ease); }
 .brand:hover .brand__mark { transform: rotate(-8deg) scale(1.08); }
 
-.nav__links { display: flex; align-items: center; gap: 1.75rem; }
+.nav__links { display: flex; align-items: center; gap: clamp(1rem, 1.6vw, 1.75rem); }
+.nav__links > a { white-space: nowrap; }
 .nav__links > a:not(.btn) {
   font-size: .875rem; color: var(--txt-dim); position: relative; padding-block: .2rem;
   transition: color .22s;
@@ -1025,3 +1026,34 @@ body.no-webgl .gallery-stage { display: none; }
 @media (max-width: 780px) {
   .gallery-stage__canvas.is-live { opacity: .4; }
 }
+
+
+/* ---------- section dots + floating contact ---------- */
+.dots {
+  position: fixed; right: 1.1rem; top: 50%; transform: translateY(-50%); z-index: 40;
+  display: flex; flex-direction: column; gap: .7rem;
+}
+.dots a {
+  position: relative; width: .6rem; height: .6rem; border-radius: 50%;
+  border: 1px solid var(--line-hi); background: transparent;
+  transition: background .25s, border-color .25s, transform .25s var(--ease);
+}
+.dots a::after {
+  content: attr(data-label); position: absolute; right: 1.2rem; top: 50%; transform: translateY(-50%);
+  font-family: var(--font-mono); font-size: .7rem; letter-spacing: .06em; white-space: nowrap;
+  color: var(--txt); background: var(--bg-card); border: 1px solid var(--line-hi);
+  padding: .25rem .55rem; border-radius: 6px; opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.dots a:hover::after, .dots a:focus-visible::after { opacity: 1; }
+.dots a:hover { border-color: var(--accent); }
+.dots a.is-active { background: var(--accent); border-color: var(--accent); transform: scale(1.35); }
+
+.float-contact {
+  position: fixed; right: 1.25rem; bottom: 1.25rem; z-index: 40;
+  opacity: 0; transform: translateY(12px); pointer-events: none;
+  transition: opacity .3s, transform .3s var(--ease);
+}
+.float-contact.is-shown { opacity: 1; transform: none; pointer-events: auto; }
+
+@media (max-width: 900px) { .dots { display: none; } }
+@media (prefers-reduced-motion: reduce) { .float-contact { transition: none; } }
