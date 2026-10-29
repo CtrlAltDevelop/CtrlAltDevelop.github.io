@@ -86,7 +86,7 @@ function boot(target) {
     const side = i === 0 ? 1 : (i % 2 ? -1 : 1);
     const exhibit = createExhibit(i, EXHIBITS[sectionIds[i]].screen, side, accent, ice, slate, seeded, sectionIds[i]);
     const baseY = (i % 3 - 1) * 0.45;
-    exhibit.position.set(side * (i === 0 ? 3.8 : 5), baseY, 4 - i * spacing);
+    exhibit.position.set(side * (i === 0 ? 3.8 : 4.3), baseY, 4 - i * spacing);
     // the page puts its content on the side the exhibit is not on (see [data-content] in the CSS)
     document.getElementById(sectionIds[i]).dataset.content = side === 1 ? 'left' : 'right';
     exhibit.userData.baseY = baseY;
@@ -246,7 +246,12 @@ function createExhibit(index, screenIndex, side, accent, ice, slate, random, sec
   const frameMaterial = lineMaterial(index === 3 || index === 8 ? accent : ice, 0.55);
   const quietMaterial = lineMaterial(slate, 0.4);
   const accentMaterial = lineMaterial(accent, 0.78);
-  group.userData.materials.push(frameMaterial, quietMaterial, accentMaterial);
+  const bodyFill = fillMaterial(0x0f1626, 0.6);
+  const accentFill = fillMaterial(accent, 0.22);
+  frameMaterial.userData.fill = bodyFill;
+  quietMaterial.userData.fill = bodyFill;
+  accentMaterial.userData.fill = accentFill;
+  group.userData.materials.push(frameMaterial, quietMaterial, accentMaterial, bodyFill, accentFill);
 
   const glow = makeGlow(accent);
   group.add(glow);
@@ -546,24 +551,15 @@ function addBracketPair(group, material) {
 }
 
 function addPhone(group, frameMaterial, accentMaterial) {
-  const phone = new THREE.LineSegments(
-    new THREE.EdgesGeometry(new THREE.BoxGeometry(1.32, 2.55, 0.22)),
-    frameMaterial
-  );
+  const phone = solid(new THREE.BoxGeometry(1.32, 2.55, 0.22), frameMaterial);
   phone.position.set(2.72, -0.05, -0.5);
   phone.rotation.y = -0.25;
   group.add(phone);
-  const home = new THREE.LineSegments(
-    new THREE.EdgesGeometry(new THREE.TorusGeometry(0.1, 0.015, 4, 20)),
-    accentMaterial
-  );
+  const home = solid(new THREE.TorusGeometry(0.1, 0.015, 4, 20), accentMaterial);
   home.position.set(2.72, -1.05, -0.36);
   group.add(home);
 
-  const screen = new THREE.LineSegments(
-    new THREE.EdgesGeometry(new THREE.BoxGeometry(1.06, 1.86, 0.025)),
-    accentMaterial
-  );
+  const screen = solid(new THREE.BoxGeometry(1.06, 1.86, 0.025), accentMaterial);
   screen.position.set(2.72, 0.06, -0.36);
   screen.rotation.y = -0.25;
   group.add(screen);
@@ -583,10 +579,7 @@ function addPhone(group, frameMaterial, accentMaterial) {
   }
 
   for (let tab = 0; tab < 3; tab++) {
-    const navItem = new THREE.LineSegments(
-      new THREE.EdgesGeometry(new THREE.BoxGeometry(0.16, 0.12, 0.035)),
-      tab === 1 ? accentMaterial : frameMaterial
-    );
+    const navItem = solid(new THREE.BoxGeometry(0.16, 0.12, 0.035), tab === 1 ? accentMaterial : frameMaterial);
     navItem.position.set(2.42 + tab * 0.3, -0.7, -0.29);
     navItem.rotation.y = -0.25;
     group.add(navItem);
@@ -595,10 +588,7 @@ function addPhone(group, frameMaterial, accentMaterial) {
 
 function addArchitectureStack(group, frameMaterial, accentMaterial) {
   for (let layer = 0; layer < 3; layer++) {
-    const box = new THREE.LineSegments(
-      new THREE.EdgesGeometry(new THREE.BoxGeometry(2.2 - layer * 0.3, 0.42, 1.3)),
-      layer === 1 ? accentMaterial : frameMaterial
-    );
+    const box = solid(new THREE.BoxGeometry(2.2 - layer * 0.3, 0.42, 1.3), layer === 1 ? accentMaterial : frameMaterial);
     box.position.set(2.65, 0.72 - layer * 0.72, -0.58);
     box.rotation.y = -0.32;
     group.add(box);
@@ -611,10 +601,7 @@ function addApiGraph(group, frameMaterial, accentMaterial) {
     [2.7, 1.1], [3.15, 0], [2.65, -1.15]
   ];
   positions.forEach((position, node) => {
-    const marker = new THREE.LineSegments(
-      new THREE.EdgesGeometry(new THREE.OctahedronGeometry(node % 3 === 1 ? 0.22 : 0.14, 0)),
-      node % 3 === 1 ? accentMaterial : frameMaterial
-    );
+    const marker = solid(new THREE.OctahedronGeometry(node % 3 === 1 ? 0.22 : 0.14, 0), node % 3 === 1 ? accentMaterial : frameMaterial);
     marker.position.set(position[0], position[1], -0.25);
     group.add(marker);
     const edge = new THREE.Line(
@@ -648,10 +635,7 @@ function addRoad(group, frameMaterial, accentMaterial) {
       lineBetween(group, accentMaterial, [x, y, -0.3], [x, y - 0.17, -0.3]);
     }
     for (let stop = 0; stop < 6; stop++) {
-      const marker = new THREE.LineSegments(
-        new THREE.EdgesGeometry(new THREE.OctahedronGeometry(stop === 0 ? 0.15 : 0.1, 0)),
-        stop === 0 ? accentMaterial : frameMaterial
-      );
+      const marker = solid(new THREE.OctahedronGeometry(stop === 0 ? 0.15 : 0.1, 0), stop === 0 ? accentMaterial : frameMaterial);
       marker.position.set(x + side * 0.62, top - 0.1 - stop * 0.64, -0.3);
       group.add(marker);
       lineBetween(group, frameMaterial, [x + side * 0.28, marker.position.y, -0.3], [marker.position.x, marker.position.y, -0.3]);
@@ -672,9 +656,7 @@ function addCandles(group, frameMaterial, accentMaterial) {
       const bullish = close >= open;
       const body = Math.max(Math.abs(close - open), 0.06);
       const material = bullish ? accentMaterial : frameMaterial;
-      const box = new THREE.LineSegments(
-        new THREE.EdgesGeometry(new THREE.BoxGeometry(0.17, body, 0.17)), material
-      );
+      const box = solid(new THREE.BoxGeometry(0.17, body, 0.17), material);
       box.position.set(x, (open + close) / 2, -0.3);
       group.add(box);
       lineBetween(group, material, [x, low, -0.3], [x, high, -0.3]);
@@ -684,10 +666,7 @@ function addCandles(group, frameMaterial, accentMaterial) {
 
 function addDatabaseStack(group, frameMaterial, accentMaterial) {
   for (let level = 0; level < 3; level++) {
-    const database = new THREE.LineSegments(
-      new THREE.EdgesGeometry(new THREE.CylinderGeometry(0.62, 0.62, 0.42, 20)),
-      level === 0 ? accentMaterial : frameMaterial
-    );
+    const database = solid(new THREE.CylinderGeometry(0.62, 0.62, 0.42, 20), level === 0 ? accentMaterial : frameMaterial);
     database.position.set(2.85, 0.7 - level * 0.58, -0.48);
     group.add(database);
   }
@@ -699,10 +678,7 @@ function addNeuralGraph(group, frameMaterial, accentMaterial) {
   layers.forEach(([x, count], layer) => {
     for (let i = 0; i < count; i++) {
       const y = (i - (count - 1) / 2) * 0.62;
-      const node = new THREE.LineSegments(
-        new THREE.EdgesGeometry(new THREE.OctahedronGeometry(0.1, 0)),
-        layer === 2 ? accentMaterial : frameMaterial
-      );
+      const node = solid(new THREE.OctahedronGeometry(0.1, 0), layer === 2 ? accentMaterial : frameMaterial);
       node.position.set(x, y, -0.28);
       group.add(node);
       nodes.push([x, y]);
@@ -1323,6 +1299,24 @@ function makeGlow(color) {
   sprite.scale.setScalar(13);
   sprite.position.z = -1.2;
   return sprite;
+}
+
+/* A translucent body with the outline on top, so a prop reads as a solid object
+   instead of a bare wireframe. The body material hangs off the line material
+   (userData.fill) so every prop on an exhibit shares one fill per colour. */
+function solid(geometry, lineMat) {
+  const body = new THREE.Group();
+  body.add(new THREE.Mesh(geometry, lineMat.userData.fill));
+  body.add(new THREE.LineSegments(new THREE.EdgesGeometry(geometry), lineMat));
+  return body;
+}
+
+function fillMaterial(color, opacity) {
+  const material = new THREE.MeshBasicMaterial({
+    color, transparent: true, opacity, depthWrite: false, side: THREE.DoubleSide
+  });
+  material.userData.baseOpacity = opacity;
+  return material;
 }
 
 function lineMaterial(color, opacity) {
