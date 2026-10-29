@@ -400,37 +400,6 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
 .about__lead p { font-size: 1.06rem; color: var(--txt-dim); }
 .about__lead p:last-child { margin-bottom: 0; }
 
-.stats {
-  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 1.5rem;
-  background: transparent; border: 0; border-radius: 0; overflow: visible;
-  counter-reset: profile-stat;
-}
-.stat {
-  padding: 1.25rem .2rem;
-  display: flex; flex-direction: column; gap: .25rem;
-  background: transparent; background-image: none; box-shadow: none;
-  border-bottom: 1px solid var(--line);
-  counter-increment: profile-stat;
-}
-.stat::before {
-  content: counter(profile-stat, decimal-leading-zero) " / " attr(data-label);
-  margin-bottom: .45rem;
-  font-family: var(--font-mono); font-size: .59rem; font-weight: 600;
-  letter-spacing: .14em; line-height: 1; color: var(--txt-faint);
-}
-.stat:nth-last-child(-n + 2) { border-bottom: 0; }
-.stat b {
-  font-family: var(--font-mono); font-size: clamp(1.42rem, 3.2vw, 1.88rem);
-  font-weight: 700; letter-spacing: -.045em; line-height: 1;
-  font-variant-numeric: tabular-nums slashed-zero;
-  text-shadow: 0 1px 12px rgba(7, 8, 12, .78);
-}
-.stat.up b { color: var(--accent); }
-.stat > span {
-  max-width: 23ch; font-size: .8rem; color: var(--txt-dim); line-height: 1.45;
-  text-shadow: 0 1px 10px rgba(7, 8, 12, .88);
-}
-
 /* ---------- work cards ---------- */
 .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; }
 
@@ -941,7 +910,6 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
   .nav__links > a:not(.btn) { padding: .85rem 0; border-bottom: 1px solid var(--line); font-size: 1rem; }
   .nav__links > a:not(.btn)::after { display: none; }
   .nav__cta { margin-top: 1.1rem; justify-content: center; }
-  .stats { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .pkg-group { font-size: .68rem; letter-spacing: .12em; gap: .75rem; }
   .approach { grid-template-columns: 1fr; }
 
@@ -971,7 +939,6 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
   .facts b { font-size: 1rem; }
   .facts li::before { font-size: .52rem; letter-spacing: .12em; }
   .facts li > span { font-size: .68rem; letter-spacing: 0; }
-  .stat::before { font-size: .54rem; letter-spacing: .1em; }
 
   /* The scene is the only visual at this width, so the scrim is shaped around
      the copy: light across the top band where the code card floats, dark
@@ -987,7 +954,6 @@ body.no-webgl .hero { background: radial-gradient(80% 60% at 50% 40%, #0B1220, v
 @media (max-width: 460px) {
   .brand__text { display: none; }
   .pkgs--mini { grid-template-columns: 1fr; }
-  .stat b { font-size: 1.5rem; }
   .contact__actions .btn { flex: 1 1 100%; justify-content: center; }
   .contact__actions .btn--primary { font-size: .88rem; }
 }
