@@ -296,7 +296,7 @@
       var h = sec.querySelector('h2');
       var a = document.createElement('a');
       a.href = '#' + sec.id;
-      a.setAttribute('data-label', sec.id === 'hero' ? 'Mohammad Zarif' : h ? h.textContent.trim() : sec.id);
+      a.setAttribute('data-label', sec.id === 'hero' ? 'Mohammad Zarif' : sec.id === 'contact' ? 'Contact' : h ? h.textContent.trim() : sec.id);
       a.setAttribute('aria-label', a.getAttribute('data-label'));
       dots.appendChild(a);
       byId[sec.id] = a;
