@@ -84,7 +84,7 @@ function boot(target) {
 
   for (let i = 0; i < sectionIds.length; i++) {
     const side = i === 0 ? 1 : (i % 2 ? -1 : 1);
-    const exhibit = createExhibit(i, EXHIBITS[sectionIds[i]].screen, side, accent, ice, slate, seeded);
+    const exhibit = createExhibit(i, EXHIBITS[sectionIds[i]].screen, side, accent, ice, slate, seeded, sectionIds[i]);
     const baseY = (i % 3 - 1) * 0.45;
     exhibit.position.set(side * (i === 0 ? 3.8 : 4.6), baseY, 4 - i * spacing);
     exhibit.userData.baseY = baseY;
@@ -232,7 +232,7 @@ function boot(target) {
   else raf = requestAnimationFrame(animate);
 }
 
-function createExhibit(index, screenIndex, side, accent, ice, slate, random) {
+function createExhibit(index, screenIndex, side, accent, ice, slate, random, sectionId) {
   const group = new THREE.Group();
   group.userData.materials = [];
   group.userData.floatY = 0;
@@ -257,7 +257,7 @@ function createExhibit(index, screenIndex, side, accent, ice, slate, random) {
   inner.rotation.z = index % 2 ? 0.09 : -0.09;
   group.add(inner);
 
-  const signature = makeSignature(index, screenIndex, accentMaterial, frameMaterial);
+  const signature = makeSignature(index, screenIndex, accentMaterial, frameMaterial, sectionId);
   signature.position.z = 1.4;
   signature.scale.setScalar(index === 0 ? 1.16 : 1);
   group.add(signature);
@@ -284,7 +284,7 @@ function createExhibit(index, screenIndex, side, accent, ice, slate, random) {
   return group;
 }
 
-function makeSignature(index, screenIndex, accentMaterial, iceMaterial) {
+function makeSignature(index, screenIndex, accentMaterial, iceMaterial, sectionId) {
   const group = new THREE.Group();
   group.userData.materials = [];
   group.userData.scanners = [];
@@ -296,7 +296,7 @@ function makeSignature(index, screenIndex, accentMaterial, iceMaterial) {
   group.userData.materials.push(...screen.userData.materials);
   group.userData.scanners.push(...screen.userData.scanners);
 
-  const props = makeProgrammingProps(index, accentMaterial, iceMaterial);
+  const props = makeProgrammingProps(sectionId, accentMaterial, iceMaterial);
   props.position.z = 0.05;
   group.add(props);
 
@@ -492,17 +492,26 @@ function codeTexture(spec) {
   return texture;
 }
 
-function makeProgrammingProps(index, accentMaterial, iceMaterial) {
+/* Props are keyed by section id, like EXHIBITS: keying them by position handed
+   a section another section's object whenever the page order changed. */
+const PROPS = {
+  'hero':        addBracketPair,
+  'about':       addPhone,
+  'work':        addApiGraph,
+  'experience':  addRoad,
+  'open-source': addCandles,
+  'approach':    addArchitectureStack,
+  'stack':       addDatabaseStack,
+  'research':    addNeuralGraph,
+  'contact':     addTerminalPrompt
+};
+
+function makeProgrammingProps(sectionId, accentMaterial, iceMaterial) {
   const group = new THREE.Group();
-  if (index === 0) addBracketPair(group, accentMaterial);
-  if (index === 1) addPhone(group, iceMaterial, accentMaterial);
-  if (index === 2) addArchitectureStack(group, iceMaterial, accentMaterial);
-  if (index === 3) addApiGraph(group, iceMaterial, accentMaterial);
-  if (index === 4) addPackageCubes(group, iceMaterial, accentMaterial);
-  if (index === 5) addCommitGraph(group, iceMaterial, accentMaterial);
-  if (index === 6) addDatabaseStack(group, iceMaterial, accentMaterial);
-  if (index === 7) addNeuralGraph(group, iceMaterial, accentMaterial);
-  if (index === 8) addTerminalPrompt(group, iceMaterial, accentMaterial);
+  const build = PROPS[sectionId];
+  if (!build) return group;
+  if (build === addBracketPair) build(group, accentMaterial);
+  else build(group, iceMaterial, accentMaterial);
   return group;
 }
 
@@ -601,41 +610,57 @@ function addApiGraph(group, frameMaterial, accentMaterial) {
   });
 }
 
-function addPackageCubes(group, frameMaterial, accentMaterial) {
-  [
-    [-3.15, 1.25], [-2.6, 0], [-3.05, -1.25],
-    [3.1, 1.3], [2.6, 0.45], [3.05, -0.55], [2.65, -1.35]
-  ].forEach((position, cube) => {
-    const item = new THREE.LineSegments(
-      new THREE.EdgesGeometry(new THREE.BoxGeometry(0.5, 0.5, 0.5)),
-      cube === 1 || cube === 4 ? accentMaterial : frameMaterial
-    );
-    item.position.set(position[0], position[1], -0.32);
-    item.rotation.set(cube * 0.21, cube * 0.35, cube * 0.12);
-    group.add(item);
+function lineBetween(group, material, a, b) {
+  group.add(new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(...a), new THREE.Vector3(...b)]),
+    material
+  ));
+}
+
+/* Experience: a road either side of the screen, one milestone per role, the
+   current role (top) in the accent colour. */
+function addRoad(group, frameMaterial, accentMaterial) {
+  [-1, 1].forEach((side) => {
+    const x = side * 3.0;
+    const top = 1.7;
+    const bottom = -1.7;
+    lineBetween(group, frameMaterial, [x - 0.28, top, -0.3], [x - 0.28, bottom, -0.3]);
+    lineBetween(group, frameMaterial, [x + 0.28, top, -0.3], [x + 0.28, bottom, -0.3]);
+    for (let y = top - 0.1; y > bottom; y -= 0.34) {
+      lineBetween(group, accentMaterial, [x, y, -0.3], [x, y - 0.17, -0.3]);
+    }
+    for (let stop = 0; stop < 6; stop++) {
+      const marker = new THREE.LineSegments(
+        new THREE.EdgesGeometry(new THREE.OctahedronGeometry(stop === 0 ? 0.15 : 0.1, 0)),
+        stop === 0 ? accentMaterial : frameMaterial
+      );
+      marker.position.set(x + side * 0.62, top - 0.1 - stop * 0.64, -0.3);
+      group.add(marker);
+      lineBetween(group, frameMaterial, [x + side * 0.28, marker.position.y, -0.3], [marker.position.x, marker.position.y, -0.3]);
+    }
   });
 }
 
-function addCommitGraph(group, frameMaterial, accentMaterial) {
-  const commits = [[-3.15, 1.25], [-2.75, .45], [-3.08, -.35], [-2.55, -1.15], [2.85, .85], [3.08, 0], [2.72, -.9]];
-  commits.forEach((commit, index) => {
-    const point = new THREE.LineSegments(
-      new THREE.EdgesGeometry(new THREE.OctahedronGeometry(0.13, 0)),
-      index === 3 || index === 5 ? accentMaterial : frameMaterial
-    );
-    point.position.set(commit[0], commit[1], -0.3);
-    group.add(point);
-    if (index) {
-      const previous = commits[index - 1];
-      if (Math.sign(previous[0]) === Math.sign(commit[0])) {
-        group.add(new THREE.Line(
-          new THREE.BufferGeometry().setFromPoints([
-            new THREE.Vector3(previous[0], previous[1], -0.34),
-            new THREE.Vector3(commit[0], commit[1], -0.34)
-          ]), frameMaterial
-        ));
-      }
-    }
+/* Open source: candlesticks, the flagship being a charting library. Each
+   candle is [open, close, low, high] in scene units. */
+function addCandles(group, frameMaterial, accentMaterial) {
+  const clusters = [
+    { x: -3.5, candles: [[-.6, -.1, -.9, .1], [-.1, .45, -.3, .7], [.45, .2, .05, .8], [.2, .9, .1, 1.1], [.9, .6, .4, 1.2], [.6, 1.25, .5, 1.5]] },
+    { x: 2.5, candles: [[.9, 1.3, .7, 1.5], [1.3, .85, .6, 1.4], [.85, .3, .1, .95], [.3, .55, -.1, .75], [.55, -.2, -.4, .65], [-.2, -.7, -.9, -.05]] }
+  ];
+  clusters.forEach((cluster) => {
+    cluster.candles.forEach(([open, close, low, high], i) => {
+      const x = cluster.x + i * 0.34;
+      const bullish = close >= open;
+      const body = Math.max(Math.abs(close - open), 0.06);
+      const material = bullish ? accentMaterial : frameMaterial;
+      const box = new THREE.LineSegments(
+        new THREE.EdgesGeometry(new THREE.BoxGeometry(0.17, body, 0.17)), material
+      );
+      box.position.set(x, (open + close) / 2, -0.3);
+      group.add(box);
+      lineBetween(group, material, [x, low, -0.3], [x, high, -0.3]);
+    });
   });
 }
 
