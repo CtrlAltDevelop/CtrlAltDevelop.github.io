@@ -1089,3 +1089,26 @@ body.no-webgl .gallery-stage { display: none; }
   .section[data-content] .research { grid-template-columns: minmax(0, 1fr); }
   .section[data-content] .stack { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+
+/* ---------- experience: the road runs down the middle, roles alternate either side ---------- */
+@media (min-width: 900px) {
+  #experience[data-content] .wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--pad); }
+  #experience .timeline { padding-left: 0; gap: 1.1rem; }
+  #experience .timeline::before { left: 50%; margin-left: -9px; }
+  #experience .timeline::after  { left: calc(50% - 1px); }
+  #experience .tl {
+    grid-template-columns: minmax(0, 1fr); gap: .3rem;
+    width: calc(50% - 2.75rem); padding: 1rem 1.2rem;
+  }
+  #experience .tl:nth-child(odd)  { justify-self: start; }
+  #experience .tl:nth-child(even) { justify-self: end; }
+  #experience .tl:nth-child(odd)::before  { left: calc(100% + 2.75rem - 6.5px); }
+  #experience .tl:nth-child(even)::before { left: calc(-2.75rem - 6.5px); }
+  #experience .tl:nth-child(odd)::after   { left: 100%; width: calc(2.75rem - 9px); }
+  #experience .tl:nth-child(even)::after  { left: calc(-2.75rem + 9px); width: calc(2.75rem - 9px); }
+  #experience .tl__body h3 { font-size: 1.02rem; }
+  #experience .tl__org { margin: .2rem 0 .4rem; font-size: .86rem; }
+  #experience .tl__body > p:last-child { font-size: .86rem; }
+  #experience .tl__date { font-size: .72rem; padding-top: 0; }
+}
